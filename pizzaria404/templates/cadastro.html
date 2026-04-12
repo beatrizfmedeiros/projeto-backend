@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Cadastro – Pizzaria 404{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { padding-top: 104px; }
+  .form-container { max-width: 420px; margin: 4rem auto 2rem; }
+  .form-control { width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section>
+    <div class="container mt-4 mb-4">
+      <div class="card p-3 shadow-sm form-container">
+        <h4 class="text-center mb-3">Formulário de Cadastro</h4>
+        <form id="cadastro" novalidate>
+          <div class="mb-2">
+            <label for="nome" class="form-label">Nome *</label>
+            <input type="text" class="form-control" id="nome" placeholder="Seu nome" required />
+          </div>
+          <div class="mb-2">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="tel" class="form-control" id="telefone" placeholder="(00) 00000-0000" />
+          </div>
+          <div class="mb-2">
+            <label for="email" class="form-label">E-mail *</label>
+            <input type="email" class="form-control" id="email" placeholder="email@gmail.com" required />
+          </div>
+          <div class="mb-2">
+            <label for="cpf" class="form-label">CPF</label>
+            <input type="text" class="form-control" id="cpf" placeholder="000.000.000-00" />
+          </div>
+          <div class="mb-2">
+            <label for="endereco" class="form-label">Endereço</label>
+            <input type="text" class="form-control" id="endereco" placeholder="Rua, número, bairro" />
+          </div>
+          <div class="mb-2">
+            <label for="senha" class="form-label">Senha *</label>
+            <input type="password" class="form-control" id="senha" placeholder="Digite sua senha" required />
+          </div>
+          <div class="mb-3">
+            <label for="referencia" class="form-label">Referência</label>
+            <input type="text" class="form-control" id="referencia" placeholder="Ponto de referência (opcional)" />
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Cadastrar</button>
+          </div>
+          <div class="text-center mt-2">
+            <p class="mb-0">Já tem conta? <a href="/login">Faça login</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p>&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}

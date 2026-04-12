@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Login – Pizzaria 404{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { padding-top: 104px; }
+  .form-container { max-width: 400px; margin: 4rem auto 2rem; }
+  .form-control { width: 100%; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <section>
+    <div class="container mt-4">
+      <div class="card p-3 shadow-sm form-container">
+        <h4 class="text-center mb-3">Login</h4>
+        <form id="login" novalidate>
+          <div class="mb-2">
+            <label for="email" class="form-label">E-mail *</label>
+            <input type="email" class="form-control" id="email" placeholder="Digite seu e-mail" required />
+          </div>
+          <div class="mb-3">
+            <label for="senha" class="form-label">Senha *</label>
+            <input type="password" class="form-control" id="senha" placeholder="Digite sua senha" required />
+          </div>
+          <div class="d-grid mb-2">
+            <button type="submit" class="btn btn-primary">Acessar</button>
+          </div>
+          <div class="text-center">
+            <p class="mb-0">Não tem uma conta? <a href="/cadastro">Cadastre-se</a></p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <p>&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}

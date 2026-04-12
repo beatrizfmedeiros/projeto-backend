@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Sobre – Pizzaria 404{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { padding-top: 104px; }
+  .founder-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0,0,0,.2);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 pb-5">
+  <div class="text-center mb-4">
+    <h1>Sobre Nós - Pizzaria404</h1>
+    <p class="lead">Conheça nossa história e nossos fundadores</p>
+  </div>
+
+  <div class="card p-4 mb-4">
+    <h3>Nossa História</h3>
+    <p>
+      Tudo começou com um erro. Literalmente. Em uma noite chuvosa de sexta-feira,
+      dois amigos — um programador apaixonado por pizza e um pizzaiolo frustrado com
+      os sabores genéricos do mercado — decidiram pedir uma pizza online. Mas o site
+      travou. Apareceu aquele temido aviso: <strong>Erro 404 – Página não encontrada.</strong>
+      <br><br>
+      Foi aí que veio a ideia: "E se a gente criasse uma pizzaria que fosse impossível
+      de esquecer? Uma que ninguém jamais quisesse ver fora do ar?"
+      <br><br>
+      Nasceu ali a Pizzaria404 — um lugar onde os sabores são tão únicos quanto o nome.
+      Cada pizza é feita com ingredientes selecionados, receitas autorais e uma pitada
+      de rebeldia. Nosso forno nunca dá erro. E se der, é só mais uma desculpa pra
+      criar algo novo.
+    </p>
+
+    <h3>Nosso Objetivo</h3>
+    <p>
+      Desde o início, o sonho dos fundadores era claro: criar um espaço onde cada pizza
+      contasse uma história e cada cliente se sentisse parte dela. Provar que uma pizzaria
+      pode ser mais do que um lugar para comer — pode ser um ponto de encontro, uma
+      experiência, uma memória boa que começa com uma mordida.
+    </p>
+  </div>
+
+  <div class="text-center">
+    <h3>Nossos Fundadores</h3>
+    <div class="d-flex justify-content-center gap-4 mt-4 flex-wrap">
+      {% for img, nome in [
+          ("fundador1.png",       "Gusteau"),
+          ("fundador2 (1).png",   "Sanji"),
+          ("fundador3.png",       "Chef Hatchet")
+      ] %}
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='image/' + img) }}" class="founder-img" alt="{{ nome }}" />
+        <p class="mt-2 fw-semibold">{{ nome }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}
