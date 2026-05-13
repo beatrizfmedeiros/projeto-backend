@@ -65,8 +65,25 @@ header {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 48px;
 }
+
+#nav_logo {
+  flex: 0 0 auto;
+}
+
+#nav_list {
+  flex: 1 1 auto;
+}
+
+.auth {
+  flex: 0 0 auto;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
 
 #navbar a { text-decoration: none; }
 
@@ -87,7 +104,9 @@ header {
   display: flex;
   list-style: none;
   gap: 48px;
+  justify-content: center;
 }
+
 
 .nav-item a {
   text-decoration: none;
@@ -124,6 +143,30 @@ header {
   color: #FDF6EC;
   font-weight: 600;
 }
+
+.user-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cart-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 2px solid rgba(255,255,255,0.8);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.cart-link:hover {
+  background: #d2c6c681;
+  color: #fcf7f7;
+}
+
 
 /* MOBILE */
 #mobile_menu { display: none; }
@@ -386,6 +429,32 @@ footer {
   margin-top: 40px;
 }
 
+/* Mantém o footer no rodapé da página (login/cadastro) */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Garante que o conteúdo empurre o footer para baixo */
+#content,
+.container,
+.section,
+#hero,
+#cardapio,
+#sobre,
+#depoimentos,
+#contato {
+  flex: 1 0 auto;
+}
+
+footer {
+  flex: 0 0 auto;
+}
+
+
+
+
 /* CONTATO SOCIAL */
 .social-contact {
   text-align: center;
@@ -529,3 +598,57 @@ footer {
   .hero-overlay h1 { font-size: 1.8rem; }
   .pizza-item { width: 90%; }
 }
+
+/* CARRINHO */
+body {
+  padding-top: 104px;
+}
+
+.pedido-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pedido-btn {
+  width: 190px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.pedido-btn-save {
+  width: 170px;
+}
+
+.pedido-alert {
+  min-width: 240px;
+  height: 48px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 16px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .pedido-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pedido-btn,
+  .pedido-btn-save,
+  .pedido-alert {
+    width: 100%;
+  }
+}
+
