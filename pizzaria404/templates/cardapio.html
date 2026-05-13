@@ -33,7 +33,7 @@
           <p class="text-muted small mt-2 text-center">{{ desc }}</p>
         </div>
         <div class="card-footer text-center">
-          <a href="#" class="btn btn-outline-warning">Personalizar</a>
+          <a href="{{ url_for('carrinho_page', item=nome) }}" class="btn btn-outline-warning">Personalizar</a>
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@
           <p class="text-muted small mt-2 text-center">{{ desc }}</p>
         </div>
         <div class="card-footer text-center">
-          <a href="#" class="btn btn-outline-warning">Personalizar</a>
+          <a href="{{ url_for('carrinho_page', item=nome) }}" class="btn btn-outline-warning">Personalizar</a>
         </div>
       </div>
     </div>
@@ -79,7 +79,7 @@
           <p class="text-muted small mt-2 text-center">{{ desc }}</p>
         </div>
         <div class="card-footer text-center">
-          <a href="#" class="btn btn-outline-warning">Pedir</a>
+          <a href="{{ url_for('carrinho_page', item=nome) }}" class="btn btn-outline-warning">Pedir</a>
         </div>
       </div>
     </div>
@@ -92,3 +92,4 @@
   <p>&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
 </footer>
 {% endblock %}
+

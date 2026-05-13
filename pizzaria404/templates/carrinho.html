@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Carrinho – Pizzaria 404{% endblock %}
+
+{% block extra_css %}{% endblock %}
+
+{% block content %}
+<div class="container pb-5">
+
+  <div class="text-center mt-4 mb-2">
+    <h2>Seu carrinho</h2>
+  </div>
+
+  <div class="row justify-content-center mt-3">
+    <div class="col-12 col-md-8">
+
+      <div class="card shadow-sm border-0">
+
+        <div class="card-header text-center"
+             style="background-color:#970000; color:#ffe066;">
+          <h5 class="mb-0">
+            <em>{{ item_nome }}</em>
+          </h5>
+        </div>
+
+        <div class="card-body">
+
+          <div class="mb-3">
+            <div class="text-muted small">
+              Valor do produto
+            </div>
+
+            <div class="fs-4 fw-bold">
+              R$ {{ item_valor }}
+            </div>
+          </div>
+
+          <form method="POST" action="{{ url_for('api_pedido') }}">
+
+            <input type="hidden" name="item" value="{{ item_nome }}" />
+
+            <div class="mb-3">
+              <label for="personalizacao" class="form-label">
+                Personalização do pedido
+              </label>
+
+              <textarea
+                class="form-control"
+                id="personalizacao"
+                name="personalizacao"
+                rows="4"
+                placeholder="Ex: sem cebola, extra queijo, borda recheada..."
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="quantidade" class="form-label">
+                Quantidade
+              </label>
+
+              <input
+                type="number"
+                class="form-control"
+                id="quantidade"
+                name="quantidade"
+                min="1"
+                max="50"
+                value="1"
+              />
+            </div>
+
+            <!-- Área dos botões e alerta -->
+            <div class="pedido-actions">
+
+              <!-- Botão salvar -->
+              <button
+                type="submit"
+                class="btn btn-warning pedido-btn pedido-btn-save"
+              >
+                Salvar pedido
+              </button>
+
+              <!-- Mensagem central -->
+              {% if request.args.get('saved') %}
+                <div
+                  class="alert alert-success pedido-alert"
+                  role="alert"
+                >
+                  Pedido salvo!
+                </div>
+              {% else %}
+                <div></div>
+              {% endif %}
+
+
+              <!-- Botão voltar -->
+              <a
+                href="{{ url_for('cardapio_page') }}"
+                class="btn btn-outline-warning pedido-btn"
+              >
+                Voltar ao cardápio
+              </a>
+
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="text-center py-3">
+  <p class="mb-0">
+    &copy; 2025 Pizzaria 404. Todos os direitos reservados.
+  </p>
+</footer>
+{% endblock %}

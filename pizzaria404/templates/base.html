@@ -31,9 +31,19 @@
         <li class="nav-item"><a href="/#contato">Contato</a></li>
       </ul>
 
+      <div class="btn-default">
+        <a href="/cardapio">Peça aqui</a>
+      </div>
+
+
       <div class="auth">
         {% if usuario %}
-          <span>Olá, {{ usuario }}!</span>
+          <div class="user-left">
+            <a href="/meus-pedidos" class="cart-link" title="Meus pedidos">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </a>
+            <span>Olá, {{ usuario }}!</span>
+          </div>
           <button id="logout-btn" title="Sair">Sair</button>
         {% else %}
           <button onclick="window.location.href='/login'">Login</button>
@@ -41,9 +51,7 @@
         {% endif %}
       </div>
 
-      <div class="btn-default">
-        <a href="/#cardapio">Peça aqui</a>
-      </div>
+
 
       <button id="mobile_btn">
         <i class="fa-solid fa-bars"></i>
@@ -67,8 +75,9 @@
       {% endif %}
     </ul>
     <div class="btn-default" style="margin-top:12px;">
-      <a href="/#cardapio">Peça aqui</a>
+      <a href="/cardapio">Peça aqui</a>
     </div>
+
   </div>
   {% endblock %}
 

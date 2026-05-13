@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Meus Pedidos – Pizzaria 404{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { padding-top: 104px; }
+  .pedido-item-img { width: 90px; height: 70px; object-fit: cover; border-radius: 8px; }
+  .pedido-header { background-color: #970000; color: #ffe066; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container pb-5">
+  <div class="text-center mt-4 mb-3">
+    <h2>Meus pedidos</h2>
+  </div>
+
+  {% if usuario %}
+    <div class="mb-3 text-center">
+      <h5 class="mb-0">Pedido do(a): <em>{{ usuario }}</em></h5>
+    </div>
+  {% endif %}
+
+  <div class="card shadow-sm border-0">
+    <div class="card-header pedido-header text-center">
+      <h5 class="mb-0">Itens salvos</h5>
+    </div>
+
+    <div class="card-body">
+      {% if itens and itens|length > 0 %}
+        <div class="list-group list-group-flush">
+          {% for it in itens %}
+            <div class="list-group-item">
+              <div class="row align-items-center g-3">
+                <div class="col-auto">
+                  {% if it.foto %}
+                    <img
+                      class="pedido-item-img"
+                      src="{{ url_for('static', filename='image/' + it.foto) }}"
+                      alt="{{ it.nome }}"
+                    />
+                  {% else %}
+                    <div class="pedido-item-img" style="background:#eee;
+                      display:flex;align-items:center;justify-content:center;color:#666; font-size:12px;">
+                      SEM
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div class="col">
+                  <div class="fw-bold">{{ it.nome }}</div>
+                  <div class="text-muted small">
+                    Qtd: {{ it.quantidade }}
+                    {% if it.observacao %}
+                      • Obs: {{ it.observacao }}
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="col-auto text-end">
+                  <div class="fw-bold">R$ {{ it.valor_formatado }}</div>
+                  <div class="mt-2">
+                    <form method="POST" action="/api/pedido_item/delete/{{ it.id }}" style="display:inline;">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        Excluir
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-4">
+          <div class="row g-2 align-items-center">
+            <div class="col">
+              <div class="fs-4 fw-bold">Total: R$ {{ total_formatado }}</div>
+            </div>
+            <div class="col-auto d-flex gap-2">
+              <a href="/cardapio" class="btn btn-outline-warning">Continuar comprando</a>
+              <a href="/api/pedido/finalizar" class="btn btn-warning fw-bold">Finalizar pedido</a>
+            </div>
+          </div>
+        </div>
+
+      {% else %}
+        <div class="text-center py-4">
+          <p class="mb-2">Nenhum item salvo ainda.</p>
+          <a href="/cardapio" class="btn btn-outline-warning">Ir para o cardápio</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<footer class="text-center py-3">
+  <p class="mb-0">&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}
+
