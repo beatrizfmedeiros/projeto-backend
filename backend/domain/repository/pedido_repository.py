@@ -33,3 +33,13 @@ class PedidoRepository(ABC):
     def finalize_open_pedido(self, usuario_id: int) -> None:
         """Marca o pedido aberto atual do usuário como FINALIZADO"""
         pass
+
+    @abstractmethod
+    def get_finalized_pedidos(self, usuario_id: int) -> List[Pedido]:
+        """Retorna todos os pedidos de domínio finalizados do usuário"""
+        pass
+
+    @abstractmethod
+    def get_pedido_items(self, pedido_id: int) -> List[PedidoItem]:
+        """Retorna todos os itens de domínio de um pedido específico"""
+        pass

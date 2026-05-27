@@ -71,3 +71,32 @@ class PedidoService:
         if not usuario:
             raise ValueError("Usuário não encontrado.")
         self.pedido_repo.finalize_open_pedido(usuario.id)
+
+    def obter_historico(self, usuario_nome: str) -> List[dict]:
+        """Retorna o histórico de pedidos finalizados do usuário, incluindo itens de cada pedido"""
+        usuario = self.usuario_repo.get_by_nome(usuario_nome)
+        if not usuario:
+            return []
+        pedidos = self.pedido_repo.get_finalized_pedidos(usuario.id)
+        historico = []
+        for pedido in pedidos:
+            itens = self.pedido_repo.get_pedido_items(pedido.id)
+            historico.append({
+                "pedido_id": pedido.id,
+                "data": pedido.criado_em,
+                "status": pedido.status,
+                "itens": [
+                    {
+                        "id": it.id,
+                        "nome": it.item_nome,
+                        "foto": it.item_foto,
+                        "valor": float(it.item_valor),
+                        "quantidade": int(it.quantidade),
+                        "observacao": it.observacao,
+                        "subtotal": float(it.subtotal)
+                    }
+                    for it in itens
+                ]
+            })
+        return historico
+

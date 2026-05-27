@@ -97,3 +97,15 @@ class PedidoController:
             return jsonify({"ok": False, "erro": str(e)}), 400
         except Exception as e:
             return jsonify({"ok": False, "erro": f"Erro ao finalizar pedido: {str(e)}"}), 500
+
+    def obter_historico(self):
+        """Retorna o histórico de pedidos finalizados do usuário em JSON"""
+        nome = g.current_user.nome
+        try:
+            historico = self.pedido_service.obter_historico(nome)
+            return jsonify({
+                "ok": True,
+                "historico": historico
+            })
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Erro ao buscar histórico: {str(e)}"}), 500

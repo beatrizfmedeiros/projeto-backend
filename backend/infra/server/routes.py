@@ -64,3 +64,8 @@ def api_pedido_item_delete(pedido_item_id: int):
 @auth_required
 def api_pedido_finalizar():
     return pedido_controller.finalizar()
+
+@bp.route("/api/pedidos/historico", methods=["GET"])
+@auth_required
+def api_pedidos_historico():
+    return pedido_controller.obter_historico()

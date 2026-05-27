@@ -81,3 +81,31 @@ class SqlitePedidoRepository(PedidoRepository):
                 (usuario_id,),
             )
             conn.commit()
+
+    def get_finalized_pedidos(self, usuario_id: int) -> List[Pedido]:
+        with get_db() as conn:
+            rows = conn.execute(
+                "SELECT * FROM Pedidos WHERE UsuarioId = ? AND Status = 'FINALIZADO' ORDER BY Id DESC",
+                (usuario_id,)
+            ).fetchall()
+            return [SqlitePedidoModel.to_entity(r) for r in rows]
+
+    def get_pedido_items(self, pedido_id: int) -> List[PedidoItem]:
+        with get_db() as conn:
+            rows = conn.execute(
+                """
+                SELECT pi.Id,
+                       pi.PedidoId,
+                       pi.ItemNome,
+                       pi.ItemFoto,
+                       pi.ItemValor,
+                       pi.Quantidade,
+                       pi.Observacao,
+                       pi.CriadoEm
+                FROM PedidoItens pi
+                WHERE pi.PedidoId = ?
+                ORDER BY pi.Id DESC
+                """,
+                (pedido_id,)
+            ).fetchall()
+            return [SqlitePedidoItemModel.to_entity(r) for r in rows]
