@@ -1,15 +1,21 @@
 from backend.domain.repository.usuario_repository import UsuarioRepository
 from backend.domain.entity.usuario import Usuario
 from backend.infra.storage.sqlite.model.sqlite_usuario_model import SqliteUsuarioModel
+from backend.infra.security.cryptography import SymmetricCryptographer
 from backend.infra.db import get_db
+
+cryptographer = SymmetricCryptographer()
 
 class SqliteUsuarioRepository(UsuarioRepository):
     def save(self, usuario: Usuario) -> None:
+        # Criptografa o CPF de forma transparente antes de persistir no SQLite
+        cpf_encrypted = cryptographer.encrypt(usuario.cpf)
+        
         with get_db() as conn:
             conn.execute(
                 """INSERT INTO Usuarios (Nome, Telefone, Email, CPF, Endereco, Referencia, Senha)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (usuario.nome, usuario.telefone, usuario.email, usuario.cpf, usuario.endereco, usuario.referencia, usuario.senha),
+                (usuario.nome, usuario.telefone, usuario.email, cpf_encrypted, usuario.endereco, usuario.referencia, usuario.senha),
             )
             conn.commit()
 
