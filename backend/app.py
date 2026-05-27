@@ -13,7 +13,11 @@ app = Flask(
 app.secret_key = os.environ.get("SECRET_KEY", "pizzaria404_dev_secret")
 CORS(app)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "sistema.db")
+DB_NAME = os.environ.get("DB_NAME", "sistema.db")
+if os.path.isabs(DB_NAME):
+    DB_PATH = DB_NAME
+else:
+    DB_PATH = os.path.join(backend_dir, DB_NAME)
 
 # ─────────────────────────────────────────────
 # Banco de dados
@@ -416,7 +420,10 @@ def api_pedido_finalizar():
 
 if __name__ == "__main__":
     init_db()
+    host = os.environ.get("FLASK_RUN_HOST", "127.0.0.1")
+    port = int(os.environ.get("FLASK_RUN_PORT", 5000))
+    debug = os.environ.get("FLASK_DEBUG", "True").lower() in ("true", "1", "yes")
     print("✅  Banco de dados pronto.")
-    print("🍕  Pizzaria 404 → http://localhost:5000")
-    app.run(debug=True)
+    print(f"🍕  Pizzaria 404 → http://{host}:{port}")
+    app.run(host=host, port=port, debug=debug)
 

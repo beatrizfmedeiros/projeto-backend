@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${FLASK_RUN_PORT:-5000}:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_RUN_HOST=0.0.0.0
+      - DB_NAME=/data/sistema.db
+    volumes:
+      - db-data:/data
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+
+volumes:
+  db-data:
