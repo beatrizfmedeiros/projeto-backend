@@ -8,7 +8,8 @@ class PedidoController:
 
     def cardapio_page(self):
         nome = session.get("usuario_nome")
-        return render_template("cardapio.html", usuario=nome)
+        produtos = self.pedido_service.obter_cardapio()
+        return render_template("cardapio.html", usuario=nome, produtos=produtos)
 
     def sobre_page(self):
         nome = session.get("usuario_nome")
@@ -16,21 +17,19 @@ class PedidoController:
 
     def carrinho_page(self):
         nome = session.get("usuario_nome")
-        item = (request.args.get("item") or "").strip()
-        if not item:
+        item_nome = (request.args.get("item") or "").strip()
+        if not item_nome:
             return redirect(url_for("routes.cardapio_page"))
 
-        valores = {
-            "Calabresa": 39.90, "Mussarela": 34.90, "Quatro Queijos": 49.90,
-            "Brigadeiro": 29.90, "M&M": 32.90, "Romeu & Julieta": 31.90,
-            "Coxinha": 25.90, "Vulcão": 45.90, "Nutella": 37.90,
-        }
-        valor = valores.get(item, 29.90)
+        produto = self.pedido_service.obter_produto_por_nome(item_nome)
+        if not produto:
+            return redirect(url_for("routes.cardapio_page"))
+
         return render_template(
             "carrinho.html",
             usuario=nome,
-            item_nome=item,
-            item_valor=f"{valor:.2f}".replace(".", ","),
+            item_nome=produto.nome,
+            item_valor=f"{produto.preco:.2f}".replace(".", ","),
         )
 
     def adicionar_item(self):
@@ -42,23 +41,10 @@ class PedidoController:
         personalizacao = (request.form.get("personalizacao") or "").strip()
         quantidade = request.form.get("quantidade", "1").strip()
 
-        valores = {
-            "Calabresa": 39.90, "Mussarela": 34.90, "Quatro Queijos": 49.90,
-            "Brigadeiro": 29.90, "M&M": 32.90, "Romeu & Julieta": 31.90,
-            "Coxinha": 25.90, "Vulcão": 45.90, "Nutella": 37.90,
-        }
-        fotos = {
-            "Calabresa": "calabresa.jpeg", "Mussarela": "mussarela.jpeg", "Quatro Queijos": "4queijos.jpg",
-            "Brigadeiro": "brigadeiro.jpg", "M&M": "mem.jpg", "Romeu & Julieta": "roju.jpg",
-            "Coxinha": "espcoxinha.jpg", "Vulcão": "espvulcao.jpg", "Nutella": "espnutella.jpg",
-        }
-
-        item_valor = valores.get(item, 29.90)
-        item_foto = fotos.get(item, "")
-
         dto = AdicionarItemDTO(
-            item_nome=item, item_foto=item_foto, item_valor=item_valor,
-            quantidade=quantidade, observacao=personalizacao
+            item_nome=item,
+            quantidade=quantidade,
+            observacao=personalizacao
         )
         try:
             dto.validate()  # Valida contrato do input (Single Source of Truth)
@@ -68,7 +54,7 @@ class PedidoController:
         except Exception:
             return redirect(url_for("routes.login_page"))
 
-        return redirect(url_for("routes.carrinho_page", item=item) + f"&saved=1&qtd={dto.quantidade}")
+        return redirect(url_for("routes.carrinho_page", item=dto.item_nome) + f"&saved=1&qtd={dto.quantidade}")
 
     def meus_pedidos(self):
         nome = session.get("usuario_nome")

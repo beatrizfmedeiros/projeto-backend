@@ -7,14 +7,17 @@ from backend.domain.service.pedido_service import PedidoService
 from backend.infra.server.controller.usuario_controller import UsuarioController
 from backend.infra.server.controller.pedido_controller import PedidoController
 
+from backend.infra.storage.sqlite.sqlite_produto_repository import SqliteProdutoRepository
+
 bp = Blueprint("routes", __name__)
 
 # Setup de injeções (Dependency Injection)
 usuario_repo = SqliteUsuarioRepository()
 pedido_repo = SqlitePedidoRepository()
+produto_repo = SqliteProdutoRepository()
 
 usuario_service = UsuarioService(usuario_repo)
-pedido_service = PedidoService(pedido_repo, usuario_repo)
+pedido_service = PedidoService(pedido_repo, usuario_repo, produto_repo)
 
 usuario_controller = UsuarioController(usuario_service)
 pedido_controller = PedidoController(pedido_service)

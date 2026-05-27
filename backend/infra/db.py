@@ -60,4 +60,35 @@ def init_db():
             )
         """)
 
+        # Tabela Produtos
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS Produtos (
+                Id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nome       TEXT    NOT NULL UNIQUE,
+                Preco      REAL    NOT NULL,
+                Foto       TEXT,
+                Descricao  TEXT,
+                Categoria  TEXT    NOT NULL
+            )
+        """)
+
+        # Popula produtos iniciais se a tabela estiver vazia
+        cursor = conn.execute("SELECT COUNT(*) FROM Produtos")
+        if cursor.fetchone()[0] == 0:
+            produtos_iniciais = [
+                ("Calabresa", 39.90, "calabresa.jpeg", "Calabresa, cebola e orégano", "Populares"),
+                ("Mussarela", 34.90, "mussarela.jpeg", "Molho fresco e mussarela premium", "Populares"),
+                ("Quatro Queijos", 49.90, "4queijos.jpg", "Quatro queijos irresistíveis", "Populares"),
+                ("Brigadeiro", 29.90, "brigadeiro.jpg", "Massa crocante com brigadeiro", "Doces"),
+                ("M&M", 32.90, "mem.jpg", "Chocolate branco e confeitos", "Doces"),
+                ("Romeu & Julieta", 31.90, "roju.jpg", "Goiabada com queijo minas", "Doces"),
+                ("Coxinha", 25.90, "espcoxinha.jpg", "Frango desfiado com catupiry", "Especiais"),
+                ("Vulcão", 45.90, "espvulcao.jpg", "Borda recheada que explode de sabor", "Especiais"),
+                ("Nutella", 37.90, "espnutella.jpg", "Nutella com morangos frescos", "Especiais"),
+            ]
+            conn.executemany(
+                "INSERT INTO Produtos (Nome, Preco, Foto, Descricao, Categoria) VALUES (?, ?, ?, ?, ?)",
+                produtos_iniciais
+            )
+
         conn.commit()
