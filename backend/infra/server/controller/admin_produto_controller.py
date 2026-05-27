@@ -11,7 +11,7 @@ class AdminProdutoController:
     def criar(self):
         data = request.get_json()
         if not data:
-            return jsonify({"ok": False, "erro": "Payload JSON requerido."}), 400
+            return jsonify({"ok": False, "erro": "Payload JSON required."}), 400
         # Expect fields: nome, preco, foto, descricao, categoria, tags, ativo
         from backend.domain.entity.produto import Produto
         produto = Produto(
@@ -24,13 +24,13 @@ class AdminProdutoController:
             ativo=data.get("ativo", True),
         )
         prod_id = self.produto_repo.create_produto(produto)
-        return jsonify({"ok": True, "mensagem": "Produto criado.", "id": prod_id}), 201
+        return jsonify({"ok": True, "mensagem": "Product created.", "id": prod_id}), 201
 
     @admin_required
     def atualizar(self, produto_id: int):
         data = request.get_json()
         if not data:
-            return jsonify({"ok": False, "erro": "Payload JSON requerido."}), 400
+            return jsonify({"ok": False, "erro": "Payload JSON required."}), 400
         from backend.domain.entity.produto import Produto
         produto = Produto(
             id=produto_id,
@@ -43,9 +43,9 @@ class AdminProdutoController:
             ativo=data.get("ativo", True),
         )
         self.produto_repo.update_produto(produto_id, produto)
-        return jsonify({"ok": True, "mensagem": "Produto atualizado."}), 200
+        return jsonify({"ok": True, "mensagem": "Product updated."}), 200
 
     @admin_required
     def remover(self, produto_id: int):
         self.produto_repo.delete_produto(produto_id)
-        return jsonify({"ok": True, "mensagem": "Produto removido."}), 200
+        return jsonify({"ok": True, "mensagem": "Product removed."}), 200

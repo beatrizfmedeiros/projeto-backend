@@ -9,7 +9,7 @@ class ProdutoRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_nome(self, nome: str) -> Produto:
+    def get_by_name(self, nome: str) -> Produto:
         """Busca um produto específico pelo nome único"""
         pass
 

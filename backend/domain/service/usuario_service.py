@@ -29,6 +29,6 @@ class UsuarioService:
         senha_hash = self._hash_senha(dto.senha)
         return self.usuario_repo.get_by_credentials(dto.email, senha_hash)
 
-    def obter_por_nome(self, nome: str) -> Usuario:
-        """Busca o usuário por nome na base de dados e retorna a entidade"""
-        return self.usuario_repo.get_by_nome(nome)
+    def get_by_name(self, nome: str) -> Usuario:
+        """Fetches the user by name from the database"""
+        return self.usuario_repo.get_by_name(nome)

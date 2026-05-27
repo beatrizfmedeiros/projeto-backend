@@ -36,7 +36,7 @@ class UsuarioController:
 
             return jsonify({
                 "ok": True,
-                "mensagem": f"Bem-vindo, {dto.nome}! Cadastro realizado.",
+                "mensagem": f"Welcome, {dto.nome}! Registration completed.",
                 "nome": dto.nome,
                 "token": token
             })
@@ -45,8 +45,8 @@ class UsuarioController:
         except Exception as e:
             err_msg = str(e).lower()
             if "unique" in err_msg or "integrity" in err_msg:
-                return jsonify({"ok": False, "erro": "Este e-mail já está cadastrado."}), 409
-            return jsonify({"ok": False, "erro": "Erro interno no servidor."}), 500
+                return jsonify({"ok": False, "erro": "This email is already registered."}), 409
+            return jsonify({"ok": False, "erro": "Internal server error."}), 500
 
     def autenticar(self):
         dados = request.get_json(silent=True) or {}
@@ -64,11 +64,11 @@ class UsuarioController:
                 token = generate_token(usuario.id, usuario.nome, usuario.email)
                 return jsonify({
                     "ok": True,
-                    "mensagem": f"Bem-vindo de volta, {usuario.nome}!",
+                    "mensagem": f"Welcome back, {usuario.nome}!",
                     "nome": usuario.nome,
                     "token": token
                 })
-            return jsonify({"ok": False, "erro": "E-mail ou senha incorretos."}), 401
+            return jsonify({"ok": False, "erro": "Incorrect email or password."}), 401
         except ValueError as e:
             return jsonify({"ok": False, "erro": str(e)}), 400
 

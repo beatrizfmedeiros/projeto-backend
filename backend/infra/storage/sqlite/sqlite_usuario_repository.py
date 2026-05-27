@@ -27,7 +27,7 @@ class SqliteUsuarioRepository(UsuarioRepository):
             ).fetchone()
             return SqliteUsuarioModel.to_entity(row)
 
-    def get_by_nome(self, nome: str) -> Usuario:
+    def get_by_name(self, nome: str) -> Usuario:
         with get_db() as conn:
             row = conn.execute("SELECT * FROM Usuarios WHERE Nome = ?", (nome,)).fetchone()
             return SqliteUsuarioModel.to_entity(row)
