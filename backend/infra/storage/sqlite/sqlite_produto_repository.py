@@ -10,7 +10,7 @@ class SqliteProdutoRepository(ProdutoRepository):
             rows = conn.execute("SELECT * FROM Produtos ORDER BY Id ASC").fetchall()
             return [SqliteProdutoModel.to_entity(r) for r in rows]
 
-    def get_by_nome(self, nome: str) -> Produto:
+    def get_by_name(self, nome: str) -> Produto:
         with get_db() as conn:
             row = conn.execute("SELECT * FROM Produtos WHERE Nome = ? LIMIT 1", (nome,)).fetchone()
             return SqliteProdutoModel.to_entity(row)
@@ -20,7 +20,7 @@ class SqliteProdutoRepository(ProdutoRepository):
             rows = conn.execute("SELECT * FROM Produtos ORDER BY Id ASC").fetchall()
             return [SqliteProdutoModel.to_entity(r) for r in rows]
 
-    def get_by_nome(self, nome: str) -> Produto:
+    def get_by_name(self, nome: str) -> Produto:
         with get_db() as conn:
             row = conn.execute("SELECT * FROM Produtos WHERE Nome = ? LIMIT 1", (nome,)).fetchone()
             return SqliteProdutoModel.to_entity(row)

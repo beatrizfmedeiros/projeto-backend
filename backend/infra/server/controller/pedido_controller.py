@@ -10,7 +10,7 @@ class PedidoController:
         """Retorna todos os itens do carrinho ativo do usuário em formato JSON estruturado"""
         nome = g.current_user.nome
         try:
-            itens = self.pedido_service.obter_itens_carrinho(nome)
+            itens = self.pedido_service.get_cart_items(nome)
             total = 0.0
             itens_out = []
             for it in itens:
@@ -30,7 +30,7 @@ class PedidoController:
                 "total": float(total)
             })
         except Exception as e:
-            return jsonify({"ok": False, "erro": f"Erro ao buscar carrinho: {str(e)}"}), 500
+            return jsonify({"ok": False, "erro": f"Error fetching cart: {str(e)}"}), 500
 
     def adicionar_item(self):
         """Adiciona um item ao carrinho via form-data ou JSON payload"""
@@ -60,29 +60,29 @@ class PedidoController:
         )
         try:
             dto.validate()  # Valida contrato sintático (Single Source of Truth)
-            self.pedido_service.adicionar_item(nome, dto)
+            self.pedido_service.add_item(nome, dto)
             return jsonify({
                 "ok": True,
-                "mensagem": f"Item '{dto.item_nome}' adicionado ao carrinho com sucesso!"
+                "mensagem": f"Item '{dto.item_nome}' added to cart successfully!"
             }), 201
         except ValueError as e:
             return jsonify({"ok": False, "erro": str(e)}), 400
         except Exception as e:
-            return jsonify({"ok": False, "erro": f"Erro interno no servidor: {str(e)}"}), 500
+            return jsonify({"ok": False, "erro": f"Internal server error: {str(e)}"}), 500
 
     def remover_item(self, pedido_item_id):
         """Remove um item específico do carrinho"""
         nome = g.current_user.nome
         try:
-            self.pedido_service.remover_item_carrinho(nome, pedido_item_id)
+            self.pedido_service.remove_cart_item(nome, pedido_item_id)
             return jsonify({
                 "ok": True,
-                "mensagem": "Item removido do carrinho com sucesso!"
+                "mensagem": "Item removed from cart successfully!"
             })
         except ValueError as e:
             return jsonify({"ok": False, "erro": str(e)}), 400
         except Exception as e:
-            return jsonify({"ok": False, "erro": f"Erro ao remover item: {str(e)}"}), 500
+            return jsonify({"ok": False, "erro": f"Error removing item: {str(e)}"}), 500
 
     def finalizar(self):
         """Finaliza o carrinho ativo (Checkout) usando dados de checkout congelados."""
@@ -98,24 +98,24 @@ class PedidoController:
                 total_pago=data.get('total_pago')
             )
             # Service now expects DTO
-            self.pedido_service.finalizar_carrinho(nome, dto)
+            self.pedido_service.checkout_cart(nome, dto)
             return jsonify({
                 "ok": True,
-                "mensagem": "Pedido finalizado com sucesso!"
+                "mensagem": "Order finalized successfully!"
             })
         except ValueError as e:
             return jsonify({"ok": False, "erro": str(e)}), 400
         except Exception as e:
-            return jsonify({"ok": False, "erro": f"Erro ao finalizar pedido: {str(e)}"}), 500
+            return jsonify({"ok": False, "erro": f"Error finalizing order: {str(e)}"}), 500
 
     def obter_historico(self):
         """Retorna o histórico de pedidos finalizados do usuário em JSON"""
         nome = g.current_user.nome
         try:
-            historico = self.pedido_service.obter_historico(nome)
+            historico = self.pedido_service.get_history(nome)
             return jsonify({
                 "ok": True,
                 "historico": historico
             })
         except Exception as e:
-            return jsonify({"ok": False, "erro": f"Erro ao buscar histórico: {str(e)}"}), 500
+            return jsonify({"ok": False, "erro": f"Error fetching history: {str(e)}"}), 500

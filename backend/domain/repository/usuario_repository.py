@@ -13,6 +13,6 @@ class UsuarioRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_nome(self, nome: str) -> Usuario:
+    def get_by_name(self, nome: str) -> Usuario:
         """Obtém o usuário de domínio cadastrado pelo seu Nome"""
         pass

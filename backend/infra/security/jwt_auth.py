@@ -34,7 +34,7 @@ def auth_required(f):
                 payload = decode_token(token)
                 # Injeta dados mínimos de contexto para o fluxo
                 from backend.infra.storage.sqlite.sqlite_usuario_repository import SqliteUsuarioRepository
-                usuario = SqliteUsuarioRepository().get_by_nome(payload["nome"])
+                usuario = SqliteUsuarioRepository().get_by_name(payload["nome"])
                 if usuario:
                     g.current_user = usuario
                     g.auth_method = "JWT"

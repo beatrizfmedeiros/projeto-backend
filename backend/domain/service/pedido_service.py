@@ -13,24 +13,24 @@ class PedidoService:
         self.usuario_repo = usuario_repo
         self.produto_repo = produto_repo
 
-    def obter_cardapio(self) -> List[Produto]:
-        """Obtém todos os produtos cadastrados no cardápio do banco de dados"""
+    def get_menu(self) -> List[Produto]:
+        """Retrieves all products in the menu from the database"""
         return self.produto_repo.get_all()
 
-    def obter_produto_por_nome(self, nome: str) -> Produto:
-        """Busca um produto do cardápio pelo nome"""
-        return self.produto_repo.get_by_nome(nome)
+    def get_product_by_name(self, nome: str) -> Produto:
+        """Finds a product in the menu by name"""
+        return self.produto_repo.get_by_name(nome)
 
-    def adicionar_item(self, usuario_nome: str, dto: AdicionarItemDTO) -> None:
-        """Adiciona um item ao carrinho/pedido aberto obtendo dados autênticos do DB"""
-        usuario = self.usuario_repo.get_by_nome(usuario_nome)
+    def add_item(self, user_name: str, dto: AdicionarItemDTO) -> None:
+        """Adds an item to the cart/open order using authenticated DB data"""
+        usuario = self.usuario_repo.get_by_name(user_name)
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise ValueError("User not found.")
 
-        # Busca dados do produto no banco de dados para segurança
-        produto = self.produto_repo.get_by_nome(dto.item_nome)
+        # Securely fetch product data from the database
+        produto = self.produto_repo.get_by_name(dto.item_nome)
         if not produto:
-            raise ValueError(f"O item '{dto.item_nome}' não faz parte do nosso cardápio oficial.")
+            raise ValueError(f"Item '{dto.item_nome}' is not in our official menu.")
 
         # Busca ou cria o pedido aberto
         pedido = self.pedido_repo.get_open_pedido(usuario.id)
@@ -51,32 +51,32 @@ class PedidoService:
         )
         self.pedido_repo.save_item(item)
 
-    def obter_itens_carrinho(self, usuario_nome: str) -> List[PedidoItem]:
-        """Obtém todos os itens do carrinho do usuário"""
-        usuario = self.usuario_repo.get_by_nome(usuario_nome)
+    def get_cart_items(self, user_name: str) -> List[PedidoItem]:
+        """Retrieves all items in the user's cart"""
+        usuario = self.usuario_repo.get_by_name(user_name)
         if not usuario:
             return []
         return self.pedido_repo.get_open_pedido_items(usuario.id)
 
-    def remover_item_carrinho(self, usuario_nome: str, pedido_item_id: int) -> None:
-        """Remove um item do carrinho do usuário"""
-        usuario = self.usuario_repo.get_by_nome(usuario_nome)
+    def remove_cart_item(self, user_name: str, pedido_item_id: int) -> None:
+        """Removes an item from the user's cart"""
+        usuario = self.usuario_repo.get_by_name(user_name)
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
+            raise ValueError("User not found.")
         self.pedido_repo.delete_item_from_open_pedido(pedido_item_id, usuario.id)
 
-    def finalizar_carrinho(self, usuario_nome: str, dto) -> None:
-        """Finaliza o carrinho do usuário usando dados de checkout congelados.
-        Recebe um DTO contendo endereço, forma de pagamento, valor do frete e total pago.
+    def checkout_cart(self, user_name: str, dto) -> None:
+        """Finalizes the user's cart using frozen checkout data.
+        Receives a DTO containing address, payment method, shipping cost, and total paid.
         """
-        usuario = self.usuario_repo.get_by_nome(usuario_nome)
+        usuario = self.usuario_repo.get_by_name(user_name)
         if not usuario:
-            raise ValueError("Usuário não encontrado.")
-        # Validação de negócio
+            raise ValueError("User not found.")
+        # Business validation
         if hasattr(dto, 'validate'):
             dto.validate()
         else:
-            raise ValueError('DTO de finalização inválido.')
+            raise ValueError('Invalid checkout DTO.')
         # Persiste os dados congelados no pedido
         self.pedido_repo.finalize_open_pedido(
             usuario.id,
@@ -86,9 +86,9 @@ class PedidoService:
             total_pago=dto.total_pago,
         )
 
-    def obter_historico(self, usuario_nome: str) -> List[dict]:
-        """Retorna o histórico de pedidos finalizados do usuário, incluindo itens de cada pedido"""
-        usuario = self.usuario_repo.get_by_nome(usuario_nome)
+    def get_history(self, user_name: str) -> List[dict]:
+        """Returns the user's finalized order history, including items for each order"""
+        usuario = self.usuario_repo.get_by_name(user_name)
         if not usuario:
             return []
         pedidos = self.pedido_repo.get_finalized_pedidos(usuario.id)
