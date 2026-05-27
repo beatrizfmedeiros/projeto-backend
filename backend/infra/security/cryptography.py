@@ -6,8 +6,10 @@ class SymmetricCryptographer:
         if not key:
             key = os.environ.get("ENCRYPTION_KEY")
             if not key:
-                # Chave simétrica fallback base64 de 32 bytes segura para testes locais
-                key = "38bZ4x8W8k3N_p69v5m6L8x1y5K2g3P8m9A4b5C6d7E=" 
+                raise RuntimeError(
+                    "ERRO CRÍTICO DE SEGURANÇA: A variável de ambiente 'ENCRYPTION_KEY' "
+                    "não foi configurada. O servidor não pode inicializar sem uma chave de criptografia ativa."
+                )
         
         self._fernet = Fernet(key.encode() if isinstance(key, str) else key)
 
