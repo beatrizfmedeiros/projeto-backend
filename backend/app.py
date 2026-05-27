@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify, render_template, session, redirect, url_for
 from flask_cors import CORS
-import sqlite3
 import hashlib
 import os
+
+# Importações da camada de Infraestrutura e Domínio
+from backend.infra.db import init_db
+from backend.infra.storage.sqlite.sqlite_usuario_repository import SqliteUsuarioRepository
+from backend.infra.storage.sqlite.sqlite_pedido_repository import SqlitePedidoRepository
 
 backend_dir = os.path.dirname(os.path.abspath(__file__))
 app = Flask(
@@ -13,65 +17,9 @@ app = Flask(
 app.secret_key = os.environ.get("SECRET_KEY", "pizzaria404_dev_secret")
 CORS(app)
 
-DB_NAME = os.environ.get("DB_NAME", "sistema.db")
-if os.path.isabs(DB_NAME):
-    DB_PATH = DB_NAME
-else:
-    DB_PATH = os.path.join(backend_dir, DB_NAME)
-
-# ─────────────────────────────────────────────
-# Banco de dados
-# ─────────────────────────────────────────────
-
-def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def init_db():
-    with get_db() as conn:
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS Usuarios (
-                Id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                Nome       TEXT    NOT NULL,
-                Telefone   TEXT,
-                Email      TEXT    NOT NULL UNIQUE,
-                CPF        TEXT,
-                Endereco   TEXT,
-                Referencia TEXT,
-                Senha      TEXT    NOT NULL,
-                CriadoEm  TEXT    DEFAULT (datetime('now'))
-            )
-        """)
-
-        # Pedido "aberto" do usuário (um pedido agregado que acumula itens)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS Pedidos (
-                Id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                UsuarioId INTEGER NOT NULL,
-                Status    TEXT    NOT NULL DEFAULT 'ABERTO',
-                CriadoEm   TEXT   DEFAULT (datetime('now')),
-                FOREIGN KEY (UsuarioId) REFERENCES Usuarios(Id)
-            )
-        """)
-
-        # Itens do pedido
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS PedidoItens (
-                Id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                PedidoId  INTEGER NOT NULL,
-                ItemNome   TEXT NOT NULL,
-                ItemFoto   TEXT,
-                ItemValor  REAL NOT NULL,
-                Quantidade INTEGER NOT NULL DEFAULT 1,
-                Observacao TEXT,
-                CriadoEm   TEXT DEFAULT (datetime('now')),
-                FOREIGN KEY (PedidoId) REFERENCES Pedidos(Id)
-            )
-        """)
-
-        conn.commit()
-
+# Instanciação dos repositórios concretos
+usuario_repo = SqliteUsuarioRepository()
+pedido_repo = SqlitePedidoRepository()
 
 def hash_senha(senha: str) -> str:
     return hashlib.sha256(senha.encode()).hexdigest()
@@ -118,7 +66,6 @@ def carrinho_page():
         return redirect(url_for("cardapio_page"))
 
     valores = {
-
         "Calabresa": 39.90,
         "Mussarela": 34.90,
         "Quatro Queijos": 49.90,
@@ -184,38 +131,20 @@ def api_pedido():
     item_valor = valores.get(item, 29.90)
     item_foto = fotos.get(item, "")
 
-    with get_db() as conn:
-        # resolve Id do usuário pelo nome salvo na sessão (já que temos usuario_nome)
-        usuario = conn.execute("SELECT Id FROM Usuarios WHERE Nome = ?", (usuario_nome,)).fetchone()
-        if not usuario:
-            return redirect(url_for("login_page"))
+    # resolve Id do usuário pelo nome
+    usuario_id = usuario_repo.get_id_by_nome(usuario_nome)
+    if not usuario_id:
+        return redirect(url_for("login_page"))
 
-        usuario_id = usuario["Id"]
+    # busca ou cria pedido aberto
+    pedido = pedido_repo.get_open_pedido(usuario_id)
+    if not pedido:
+        pedido_id = pedido_repo.create_open_pedido(usuario_id)
+    else:
+        pedido_id = pedido["Id"]
 
-        # busca pedido aberto
-        pedido = conn.execute(
-            "SELECT * FROM Pedidos WHERE UsuarioId = ? AND Status = 'ABERTO' ORDER BY Id DESC LIMIT 1",
-            (usuario_id,),
-        ).fetchone()
-
-        if not pedido:
-            cur = conn.execute(
-                "INSERT INTO Pedidos (UsuarioId, Status) VALUES (?, 'ABERTO')",
-                (usuario_id,),
-            )
-            pedido_id = cur.lastrowid
-        else:
-            pedido_id = pedido["Id"]
-
-        conn.execute(
-            """
-                INSERT INTO PedidoItens (PedidoId, ItemNome, ItemFoto, ItemValor, Quantidade, Observacao)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (pedido_id, item, item_foto, float(item_valor), int(qtd), personalizacao),
-        )
-
-        conn.commit()
+    # adiciona item
+    pedido_repo.add_item_to_pedido(pedido_id, item, item_foto, item_valor, qtd, personalizacao)
 
     # Mantém fluxo atual: volta para a página do item.
     return redirect(url_for("carrinho_page", item=item) + f"&saved=1&qtd={qtd}")
@@ -224,7 +153,6 @@ def api_pedido():
 # ─────────────────────────────────────────────
 # API – cadastro
 # ─────────────────────────────────────────────
-
 
 @app.route("/api/cadastro", methods=["POST"])
 def api_cadastro():
@@ -243,17 +171,13 @@ def api_cadastro():
     referencia = dados.get("referencia", "").strip()
 
     try:
-        with get_db() as conn:
-            conn.execute(
-                """INSERT INTO Usuarios (Nome, Telefone, Email, CPF, Endereco, Referencia, Senha)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (nome, telefone, email, cpf, endereco, referencia, senha_hash),
-            )
-            conn.commit()
+        usuario_repo.create_usuario(nome, telefone, email, cpf, endereco, referencia, senha_hash)
         return jsonify({"ok": True, "mensagem": f"Bem-vindo, {nome}! Cadastro realizado."})
-    except sqlite3.IntegrityError:
-        return jsonify({"ok": False, "erro": "Este e-mail já está cadastrado."}), 409
     except Exception as e:
+        # Verifica se é erro de unicidade (e-mail já cadastrado)
+        err_msg = str(e).lower()
+        if "unique" in err_msg or "integrity" in err_msg:
+            return jsonify({"ok": False, "erro": "Este e-mail já está cadastrado."}), 409
         return jsonify({"ok": False, "erro": str(e)}), 500
 
 # ─────────────────────────────────────────────
@@ -269,11 +193,7 @@ def api_login():
     if not email or not senha:
         return jsonify({"ok": False, "erro": "Preencha e-mail e senha."}), 400
 
-    with get_db() as conn:
-        usuario = conn.execute(
-            "SELECT * FROM Usuarios WHERE Email = ? AND Senha = ?",
-            (email, hash_senha(senha)),
-        ).fetchone()
+    usuario = usuario_repo.get_usuario_by_credentials(email, hash_senha(senha))
 
     if usuario:
         session["usuario_id"]   = usuario["Id"]
@@ -298,27 +218,11 @@ def meus_pedidos_page():
 
     usuario_nome = session.get("usuario_nome")
 
-    with get_db() as conn:
-        usuario = conn.execute("SELECT Id FROM Usuarios WHERE Nome = ?", (usuario_nome,)).fetchone()
-        if not usuario:
-            return redirect(url_for("login_page"))
+    usuario_id = usuario_repo.get_id_by_nome(usuario_nome)
+    if not usuario_id:
+        return redirect(url_for("login_page"))
 
-        usuario_id = usuario["Id"]
-
-        itens = conn.execute(
-            """
-            SELECT pi.ItemNome as nome,
-                   pi.ItemFoto as foto,
-                   pi.ItemValor as valor,
-                   pi.Quantidade as quantidade,
-                   pi.Observacao as observacao
-            FROM PedidoItens pi
-            JOIN Pedidos p ON p.Id = pi.PedidoId
-            WHERE p.UsuarioId = ? AND p.Status = 'ABERTO'
-            ORDER BY pi.Id DESC
-            """,
-            (usuario_id,),
-        ).fetchall()
+    itens = pedido_repo.get_open_pedido_items(usuario_id)
 
     total = 0.0
     itens_out = []
@@ -345,7 +249,6 @@ def meus_pedidos_page():
         total_formatado=total_formatado,
     )
 
-
 @app.route("/api/me")
 def api_me():
     if usuario_logado():
@@ -363,67 +266,38 @@ def api_pedido_item_delete(pedido_item_id: int):
 
     usuario_nome = session.get("usuario_nome")
 
-    with get_db() as conn:
-        usuario = conn.execute("SELECT Id FROM Usuarios WHERE Nome = ?", (usuario_nome,)).fetchone()
-        if not usuario:
-            return redirect(url_for("login_page"))
+    usuario_id = usuario_repo.get_id_by_nome(usuario_nome)
+    if not usuario_id:
+        return redirect(url_for("login_page"))
 
-        usuario_id = usuario["Id"]
-
-        # delete apenas se o item pertencer a um pedido ABERTO do usuário logado
-        conn.execute(
-            """
-            DELETE FROM PedidoItens
-            WHERE Id = ?
-              AND PedidoId IN (
-                SELECT Id FROM Pedidos
-                WHERE UsuarioId = ? AND Status = 'ABERTO'
-              )
-            """,
-            (pedido_item_id, usuario_id),
-        )
-        conn.commit()
+    pedido_repo.delete_item_from_open_pedido(pedido_item_id, usuario_id)
 
     return redirect(url_for("meus_pedidos_page"))
 
-
 @app.route("/api/pedido/finalizar", methods=["GET", "POST"])
 def api_pedido_finalizar():
-    # “Finalizar pedido” apenas marca o pedido ABERTO como finalizado.
     if not usuario_logado():
         return redirect(url_for("login_page"))
 
     usuario_nome = session.get("usuario_nome")
 
-    with get_db() as conn:
-        usuario = conn.execute("SELECT Id FROM Usuarios WHERE Nome = ?", (usuario_nome,)).fetchone()
-        if not usuario:
-            return redirect(url_for("login_page"))
+    usuario_id = usuario_repo.get_id_by_nome(usuario_nome)
+    if not usuario_id:
+        return redirect(url_for("login_page"))
 
-        usuario_id = usuario["Id"]
-
-        conn.execute(
-            """
-            UPDATE Pedidos
-            SET Status = 'FINALIZADO'
-            WHERE UsuarioId = ? AND Status = 'ABERTO'
-            """,
-            (usuario_id,),
-        )
-        conn.commit()
+    pedido_repo.finalize_open_pedido(usuario_id)
 
     return redirect(url_for("meus_pedidos_page"))
 
 
 # ─────────────────────────────────────────────
 
-
 if __name__ == "__main__":
     init_db()
     host = os.environ.get("FLASK_RUN_HOST", "127.0.0.1")
     port = int(os.environ.get("FLASK_RUN_PORT", 5000))
     debug = os.environ.get("FLASK_DEBUG", "True").lower() in ("true", "1", "yes")
+    
     print("✅  Banco de dados pronto.")
     print(f"🍕  Pizzaria 404 → http://{host}:{port}")
     app.run(host=host, port=port, debug=debug)
-

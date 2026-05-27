@@ -18,7 +18,7 @@ install: $(VENV)/bin/activate
 run dev: install
 	@if [ -f .env ]; then \
 		echo "Carregando variáveis do arquivo .env..."; \
-		export $$(cat .env | grep -v '^#' | xargs) && $(PYTHON) backend/app.py; \
+		export $$(cat .env | grep -v '^#' | xargs) && PYTHONPATH=. $(PYTHON) backend/app.py; \
 	else \
-		$(PYTHON) backend/app.py; \
+		PYTHONPATH=. $(PYTHON) backend/app.py; \
 	fi
