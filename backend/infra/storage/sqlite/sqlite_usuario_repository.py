@@ -13,9 +13,9 @@ class SqliteUsuarioRepository(UsuarioRepository):
         
         with get_db() as conn:
             conn.execute(
-                """INSERT INTO Usuarios (Nome, Telefone, Email, CPF, Endereco, Referencia, Senha)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (usuario.nome, usuario.telefone, usuario.email, cpf_encrypted, usuario.endereco, usuario.referencia, usuario.senha),
+                """INSERT INTO Usuarios (Nome, Telefone, Email, CPF, Endereco, Referencia, Senha, role)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (usuario.nome, usuario.telefone, usuario.email, cpf_encrypted, usuario.endereco, usuario.referencia, usuario.senha, usuario.role),
             )
             conn.commit()
 

@@ -14,6 +14,14 @@ class ProdutoRepository(ABC):
         pass
 
     @abstractmethod
-    def save(self, produto: Produto) -> int:
-        """Salva ou atualiza um produto no banco de dados e retorna seu ID"""
+    def create_produto(self, produto: Produto) -> int:
+        """Cria um novo produto no banco de dados e retorna seu ID"""
+        pass
+
+    def update_produto(self, produto_id: int, produto: Produto) -> None:
+        """Atualiza os campos de um produto existente"""
+        pass
+
+    def delete_produto(self, produto_id: int) -> None:
+        """Remove o produto do banco de dados"""
         pass

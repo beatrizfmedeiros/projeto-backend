@@ -60,3 +60,14 @@ def auth_required(f):
             "erro": "Autenticação necessária. Envie o cabeçalho 'Authorization: Bearer <token_jwt>'."
         }), 401
     return decorated
+
+
+def admin_required(f):
+    """Decorator that ensures the current user has role 'admin'. Returns 403 otherwise."""
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        user = getattr(g, 'current_user', None)
+        if user and getattr(user, 'role', None) == 'admin':
+            return f(*args, **kwargs)
+        return jsonify({"ok": False, "erro": "Permissão de administrador necessária."}), 403
+    return wrapper

@@ -1,4 +1,4 @@
-from backend.domain.entity.produto import Produto
+import json
 
 class SqliteProdutoModel:
     @staticmethod
@@ -12,5 +12,7 @@ class SqliteProdutoModel:
             preco=row["Preco"],
             foto=row["Foto"],
             descricao=row["Descricao"],
-            categoria=row["Categoria"]
+            categoria=row["Categoria"],
+            tags=json.loads(row["Tags"]) if row["Tags"] else [],
+            ativo=bool(row["Ativo"]) if "Ativo" in row.keys() else True
         )

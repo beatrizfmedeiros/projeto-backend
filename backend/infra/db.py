@@ -19,20 +19,28 @@ def get_db():
 def init_db():
     """Inicialização das tabelas do banco de dados"""
     with get_db() as conn:
-        # Tabela Usuários
-        conn.execute("""
+        # Create Usuarios table
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS Usuarios (
-                Id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                Nome       TEXT    NOT NULL,
-                Telefone   TEXT,
-                Email      TEXT    NOT NULL UNIQUE,
-                CPF        TEXT,
-                Endereco   TEXT,
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nome TEXT NOT NULL,
+                Telefone TEXT,
+                Email TEXT NOT NULL UNIQUE,
+                CPF TEXT,
+                Endereco TEXT,
                 Referencia TEXT,
-                Senha      TEXT    NOT NULL,
-                CriadoEm  TEXT    DEFAULT (datetime('now'))
+                Senha TEXT NOT NULL,
+                CriadoEm TEXT DEFAULT (datetime('now'))
             )
-        """)
+            """
+        )
+
+        # Ensure role column exists
+        cursor = conn.execute("PRAGMA table_info(Usuarios)")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if 'role' not in columns:
+            conn.execute("ALTER TABLE Usuarios ADD COLUMN role TEXT NOT NULL DEFAULT 'user'")
 
         # Tabela Pedidos
         conn.execute("""
@@ -73,16 +81,27 @@ def init_db():
         """)
 
         # Tabela Produtos
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS Produtos (
-                Id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                Nome       TEXT    NOT NULL UNIQUE,
-                Preco      REAL    NOT NULL,
-                Foto       TEXT,
-                Descricao  TEXT,
-                Categoria  TEXT    NOT NULL
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Nome TEXT NOT NULL UNIQUE,
+                Preco REAL NOT NULL,
+                Foto TEXT,
+                Descricao TEXT,
+                Categoria TEXT NOT NULL
             )
-        """)
+            """
+        )
+
+        # Garantir colunas tags e ativo na tabela Produtos caso não existam
+        cursor = conn.execute("PRAGMA table_info(Produtos)")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if 'tags' not in columns:
+            conn.execute("ALTER TABLE Produtos ADD COLUMN tags TEXT")
+        if 'ativo' not in columns:
+            conn.execute("ALTER TABLE Produtos ADD COLUMN ativo INTEGER NOT NULL DEFAULT 1")
+
 
         # Popula produtos iniciais se a tabela estiver vazia
         cursor = conn.execute("SELECT COUNT(*) FROM Produtos")

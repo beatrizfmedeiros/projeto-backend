@@ -22,5 +22,6 @@ class SqliteUsuarioModel:
             endereco=row["Endereco"],
             referencia=row["Referencia"],
             senha=row["Senha"],
-            criado_em=row["CriadoEm"]
+            criado_em=row["CriadoEm"],
+            role=row["role"] if "role" in row.keys() else "user"
         )

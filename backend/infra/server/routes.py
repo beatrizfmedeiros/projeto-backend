@@ -10,14 +10,41 @@ from backend.domain.service.pedido_service import PedidoService
 from backend.infra.server.controller.usuario_controller import UsuarioController
 from backend.infra.server.controller.pedido_controller import PedidoController
 
-from backend.infra.security.jwt_auth import auth_required
+from backend.infra.server.controller.admin_produto_controller import AdminProdutoController
+from backend.infra.security.jwt_auth import auth_required, admin_required
 
+# ... existing imports above ...
+
+# admin_produto_controller will be instantiated after repo definitions
+produto_repo = SqliteProdutoRepository()
+admin_produto_controller = AdminProdutoController(produto_repo)
 bp = Blueprint("routes", __name__)
+@bp.route("/api/admin/produtos", methods=["POST"])
+@auth_required
+@admin_required
+def api_admin_produto_create():
+    return admin_produto_controller.criar()
+
+@bp.route("/api/admin/produtos/<int:produto_id>", methods=["PUT"])
+@auth_required
+@admin_required
+def api_admin_produto_update(produto_id: int):
+    return admin_produto_controller.atualizar(produto_id)
+
+@bp.route("/api/admin/produtos/<int:produto_id>", methods=["DELETE"])
+@auth_required
+@admin_required
+def api_admin_produto_delete(produto_id: int):
+    return admin_produto_controller.remover(produto_id)
+
+
+# Blueprint already defined earlier
 
 # Setup de injeções (Dependency Injection)
 usuario_repo = SqliteUsuarioRepository()
 pedido_repo = SqlitePedidoRepository()
 produto_repo = SqliteProdutoRepository()
+# admin_produto_controller already defined above
 
 usuario_service = UsuarioService(usuario_repo)
 pedido_service = PedidoService(pedido_repo, usuario_repo, produto_repo)
