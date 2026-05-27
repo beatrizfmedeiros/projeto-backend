@@ -9,11 +9,13 @@ def bootstrap_app():
     app = Flask(__name__)
     app.secret_key = os.environ.get("SECRET_KEY", "pizzaria404_dev_secret_key_secure_32bytes")
     CORS(app)
+    # Registra as rotas modularizadas
+    app.register_blueprint(routes_bp)
 
     # Executa a inicialização do banco de dados (tabelas)
     init_db()
 
-    # Registra as rotas modularizadas
-    app.register_blueprint(routes_bp)
-
+    # Inicia o thread de atualização automática de status dos pedidos
+    from backend.infra.background.status_updater import start_background_updater
+    start_background_updater()
     return app

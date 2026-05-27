@@ -12,10 +12,10 @@ class SqlitePedidoModel:
             usuario_id=row["UsuarioId"],
             status=row["Status"],
             criado_em=row["CriadoEm"],
-            endereco_entrega=row.get("EnderecoEntrega"),
-            forma_pagamento=row.get("FormaPagamento"),
-            valor_frete=row.get("ValorFrete"),
-            total_pago=row.get("TotalPago")
+            endereco_entrega=row["EnderecoEntrega"] if "EnderecoEntrega" in row.keys() else None,
+            forma_pagamento=row["FormaPagamento"] if "FormaPagamento" in row.keys() else None,
+            valor_frete=row["ValorFrete"] if "ValorFrete" in row.keys() else None,
+            total_pago=row["TotalPago"] if "TotalPago" in row.keys() else None,
         )
 
 class SqlitePedidoItemModel:

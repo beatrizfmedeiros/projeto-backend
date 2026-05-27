@@ -48,9 +48,8 @@ class SqliteProdutoRepository(ProdutoRepository):
         import json
         with get_db() as conn:
             conn.execute(
-                """UPDATE Produtos SET Nome = ?, Preco = ?, Foto = ?, Descricao = ?, Categoria = ?, Tags = ?, Ativo = ? WHERE Id = ?""",
+                """UPDATE Produtos SET Preco = ?, Foto = ?, Descricao = ?, Categoria = ?, Tags = ?, Ativo = ? WHERE Id = ?""",
                 (
-                    produto.nome,
                     float(produto.preco),
                     produto.foto,
                     produto.descricao,

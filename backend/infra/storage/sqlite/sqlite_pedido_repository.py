@@ -17,11 +17,51 @@ class SqlitePedidoRepository(PedidoRepository):
     def save_pedido(self, pedido: Pedido) -> int:
         with get_db() as conn:
             cur = conn.execute(
-                "INSERT INTO Pedidos (UsuarioId, Status) VALUES (?, 'ABERTO')",
+                "INSERT INTO Pedidos (UsuarioId, Status) VALUES (?, 'RECEBIDO')",
                 (pedido.usuario_id,),
             )
             conn.commit()
             return cur.lastrowid
+
+    def get_pedido_by_id(self, pedido_id: int) -> Pedido:
+        with get_db() as conn:
+            row = conn.execute(
+                "SELECT * FROM Pedidos WHERE Id = ?",
+                (pedido_id,)
+            ).fetchone()
+            return SqlitePedidoModel.to_entity(row) if row else None
+
+    def list_active_orders(self) -> List[Pedido]:
+        """Return orders whose status is not final (ENTREGUE)."""
+        with get_db() as conn:
+            rows = conn.execute(
+                "SELECT * FROM Pedidos WHERE Status != 'ENTREGUE'"
+            ).fetchall()
+            return [SqlitePedidoModel.to_entity(r) for r in rows]
+
+    def advance_status(self, pedido_id: int) -> None:
+        """Advance the status of the given order to the next step in the sequence."""
+        with get_db() as conn:
+            # Get current status
+            cur = conn.execute(
+                "SELECT Status FROM Pedidos WHERE Id = ?",
+                (pedido_id,)
+            ).fetchone()
+            if not cur:
+                return
+            current_status = cur["Status"]
+            # Compute next status using the domain sequence
+            from backend.domain.entity.pedido import Pedido as PedidoEntity
+            next_status = PedidoEntity.STATUS_SEQUENCE[PedidoEntity.STATUS_SEQUENCE.index(current_status) + 1] \
+                if current_status in PedidoEntity.STATUS_SEQUENCE and \
+                   PedidoEntity.STATUS_SEQUENCE.index(current_status) + 1 < len(PedidoEntity.STATUS_SEQUENCE) \
+                else None
+            if next_status:
+                conn.execute(
+                    "UPDATE Pedidos SET Status = ? WHERE Id = ?",
+                    (next_status, pedido_id)
+                )
+                conn.commit()
 
     def save_item(self, item: PedidoItem) -> None:
         with get_db() as conn:
@@ -75,7 +115,7 @@ class SqlitePedidoRepository(PedidoRepository):
             conn.execute(
                 """
                 UPDATE Pedidos
-                SET Status = 'FINALIZADO',
+                SET Status = 'RECEBIDO',
                     EnderecoEntrega = ?,
                     FormaPagamento = ?,
                     ValorFrete = ?,

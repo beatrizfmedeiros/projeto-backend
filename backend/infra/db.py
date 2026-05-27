@@ -47,12 +47,15 @@ def init_db():
             CREATE TABLE IF NOT EXISTS Pedidos (
                 Id         INTEGER PRIMARY KEY AUTOINCREMENT,
                 UsuarioId INTEGER NOT NULL,
-                Status    TEXT    NOT NULL DEFAULT 'ABERTO',
+                Status    TEXT    NOT NULL DEFAULT 'RECEBIDO',
                 CriadoEm   TEXT   DEFAULT (datetime('now')),
                 FOREIGN KEY (UsuarioId) REFERENCES Usuarios(Id)
             )
-        """)
-        
+        """
+        )
+        # Migration: update old statuses if present
+        conn.execute("UPDATE Pedidos SET Status = 'RECEBIDO' WHERE Status = 'ABERTO'")
+        conn.execute("UPDATE Pedidos SET Status = 'ENTREGUE' WHERE Status = 'FINALIZADO'")
         # Garantir colunas de congelamento no Pedido caso não existam
         cursor = conn.execute("PRAGMA table_info(Pedidos)")
         columns = [row['name'] for row in cursor.fetchall()]
@@ -94,6 +97,7 @@ def init_db():
             """
         )
 
+        conn.execute("DELETE FROM Produtos")
         # Garantir colunas tags e ativo na tabela Produtos caso não existam
         cursor = conn.execute("PRAGMA table_info(Produtos)")
         columns = [row['name'] for row in cursor.fetchall()]

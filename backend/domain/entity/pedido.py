@@ -2,7 +2,7 @@ from typing import List
 from backend.domain.entity.pedido_item import PedidoItem
 
 class Pedido:
-    def __init__(self, id=None, usuario_id=None, status="ABERTO", criado_em=None,
+    def __init__(self, id=None, usuario_id=None, status="RECEBIDO", criado_em=None,
                  endereco_entrega=None, forma_pagamento=None, valor_frete=None, total_pago=None, itens: List[PedidoItem] = None):
         self.id = id
         self.usuario_id = usuario_id
@@ -13,6 +13,17 @@ class Pedido:
         self.valor_frete = valor_frete
         self.total_pago = total_pago
         self.itens = itens or []
+
+    # Status progression sequence
+    STATUS_SEQUENCE = ["RECEBIDO", "PREPARANDO", "EM_ROTA_DE_ENTREGA", "ENTREGUE"]
+
+    def next_status(self) -> str | None:
+        """Return the next status in the sequence, or None if already final."""
+        try:
+            idx = self.STATUS_SEQUENCE.index(self.status)
+            return self.STATUS_SEQUENCE[idx + 1] if idx + 1 < len(self.STATUS_SEQUENCE) else None
+        except ValueError:
+            return None
 
     @property
     def total(self) -> float:

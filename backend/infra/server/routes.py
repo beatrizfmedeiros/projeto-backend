@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 from backend.infra.storage.sqlite.sqlite_usuario_repository import SqliteUsuarioRepository
 from backend.infra.storage.sqlite.sqlite_pedido_repository import SqlitePedidoRepository
@@ -91,6 +91,14 @@ def api_pedido_item_delete(pedido_item_id: int):
 @auth_required
 def api_pedido_finalizar():
     return pedido_controller.finalizar()
+
+@bp.route("/api/pedido/<int:pedido_id>/status", methods=["GET"])
+@auth_required
+def api_pedido_status(pedido_id: int):
+    pedido = pedido_repo.get_pedido_by_id(pedido_id)
+    if not pedido:
+        return jsonify({"error": "Pedido not found"}), 404
+    return jsonify({"pedido_id": pedido.id, "status": pedido.status})
 
 @bp.route("/api/pedidos/historico", methods=["GET"])
 @auth_required
