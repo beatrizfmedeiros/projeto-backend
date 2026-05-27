@@ -1,44 +1,51 @@
+from typing import List
 from backend.domain.repository.pedido_repository import PedidoRepository
+from backend.domain.entity.pedido import Pedido
+from backend.domain.entity.pedido_item import PedidoItem
+from backend.infra.storage.sqlite.model.sqlite_pedido_model import SqlitePedidoModel, SqlitePedidoItemModel
 from backend.infra.db import get_db
 
 class SqlitePedidoRepository(PedidoRepository):
-    def get_open_pedido(self, usuario_id):
+    def get_open_pedido(self, usuario_id: int) -> Pedido:
         with get_db() as conn:
-            return conn.execute(
+            row = conn.execute(
                 "SELECT * FROM Pedidos WHERE UsuarioId = ? AND Status = 'ABERTO' ORDER BY Id DESC LIMIT 1",
                 (usuario_id,),
             ).fetchone()
+            return SqlitePedidoModel.to_entity(row)
 
-    def create_open_pedido(self, usuario_id):
+    def save_pedido(self, pedido: Pedido) -> int:
         with get_db() as conn:
             cur = conn.execute(
                 "INSERT INTO Pedidos (UsuarioId, Status) VALUES (?, 'ABERTO')",
-                (usuario_id,),
+                (pedido.usuario_id,),
             )
             conn.commit()
             return cur.lastrowid
 
-    def add_item_to_pedido(self, pedido_id, item_nome, item_foto, item_valor, quantidade, observacao):
+    def save_item(self, item: PedidoItem) -> None:
         with get_db() as conn:
             conn.execute(
                 """
                     INSERT INTO PedidoItens (PedidoId, ItemNome, ItemFoto, ItemValor, Quantidade, Observacao)
                     VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (pedido_id, item_nome, item_foto, float(item_valor), int(quantidade), observacao),
+                (item.pedido_id, item.item_nome, item.item_foto, float(item.item_valor), int(item.quantidade), item.observacao),
             )
             conn.commit()
 
-    def get_open_pedido_items(self, usuario_id):
+    def get_open_pedido_items(self, usuario_id: int) -> List[PedidoItem]:
         with get_db() as conn:
-            return conn.execute(
+            rows = conn.execute(
                 """
-                SELECT pi.Id as id,
-                       pi.ItemNome as nome,
-                       pi.ItemFoto as foto,
-                       pi.ItemValor as valor,
-                       pi.Quantidade as quantidade,
-                       pi.Observacao as observacao
+                SELECT pi.Id,
+                       pi.PedidoId,
+                       pi.ItemNome,
+                       pi.ItemFoto,
+                       pi.ItemValor,
+                       pi.Quantidade,
+                       pi.Observacao,
+                       pi.CriadoEm
                 FROM PedidoItens pi
                 JOIN Pedidos p ON p.Id = pi.PedidoId
                 WHERE p.UsuarioId = ? AND p.Status = 'ABERTO'
@@ -46,8 +53,9 @@ class SqlitePedidoRepository(PedidoRepository):
                 """,
                 (usuario_id,),
             ).fetchall()
+            return [SqlitePedidoItemModel.to_entity(r) for r in rows]
 
-    def delete_item_from_open_pedido(self, pedido_item_id, usuario_id):
+    def delete_item_from_open_pedido(self, pedido_item_id: int, usuario_id: int) -> None:
         with get_db() as conn:
             conn.execute(
                 """
@@ -62,7 +70,7 @@ class SqlitePedidoRepository(PedidoRepository):
             )
             conn.commit()
 
-    def finalize_open_pedido(self, usuario_id):
+    def finalize_open_pedido(self, usuario_id: int) -> None:
         with get_db() as conn:
             conn.execute(
                 """
