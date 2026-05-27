@@ -30,8 +30,8 @@ class PedidoRepository(ABC):
         pass
 
     @abstractmethod
-    def finalize_open_pedido(self, usuario_id: int) -> None:
-        """Marca o pedido aberto atual do usuário como FINALIZADO"""
+    def finalize_open_pedido(self, usuario_id: int, endereco_entrega: str = None, forma_pagamento: str = None, valor_frete: float = None, total_pago: float = None) -> None:
+        """Marca o pedido aberto atual do usuário como FINALIZADO e grava informações de endereço, pagamento e valores."""
         pass
 
     @abstractmethod

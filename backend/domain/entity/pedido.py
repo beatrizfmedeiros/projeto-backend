@@ -2,11 +2,16 @@ from typing import List
 from backend.domain.entity.pedido_item import PedidoItem
 
 class Pedido:
-    def __init__(self, id=None, usuario_id=None, status="ABERTO", criado_em=None, itens: List[PedidoItem] = None):
+    def __init__(self, id=None, usuario_id=None, status="ABERTO", criado_em=None,
+                 endereco_entrega=None, forma_pagamento=None, valor_frete=None, total_pago=None, itens: List[PedidoItem] = None):
         self.id = id
         self.usuario_id = usuario_id
         self.status = status
         self.criado_em = criado_em
+        self.endereco_entrega = endereco_entrega
+        self.forma_pagamento = forma_pagamento
+        self.valor_frete = valor_frete
+        self.total_pago = total_pago
         self.itens = itens or []
 
     @property

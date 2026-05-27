@@ -65,12 +65,26 @@ class PedidoService:
             raise ValueError("Usuário não encontrado.")
         self.pedido_repo.delete_item_from_open_pedido(pedido_item_id, usuario.id)
 
-    def finalizar_carrinho(self, usuario_nome: str) -> None:
-        """Finaliza o carrinho do usuário marcando o pedido correspondente como finalizado"""
+    def finalizar_carrinho(self, usuario_nome: str, dto) -> None:
+        """Finaliza o carrinho do usuário usando dados de checkout congelados.
+        Recebe um DTO contendo endereço, forma de pagamento, valor do frete e total pago.
+        """
         usuario = self.usuario_repo.get_by_nome(usuario_nome)
         if not usuario:
             raise ValueError("Usuário não encontrado.")
-        self.pedido_repo.finalize_open_pedido(usuario.id)
+        # Validação de negócio
+        if hasattr(dto, 'validate'):
+            dto.validate()
+        else:
+            raise ValueError('DTO de finalização inválido.')
+        # Persiste os dados congelados no pedido
+        self.pedido_repo.finalize_open_pedido(
+            usuario.id,
+            endereco_entrega=dto.endereco_entrega,
+            forma_pagamento=dto.forma_pagamento,
+            valor_frete=dto.valor_frete,
+            total_pago=dto.total_pago,
+        )
 
     def obter_historico(self, usuario_nome: str) -> List[dict]:
         """Retorna o histórico de pedidos finalizados do usuário, incluindo itens de cada pedido"""

@@ -11,7 +11,11 @@ class SqlitePedidoModel:
             id=row["Id"],
             usuario_id=row["UsuarioId"],
             status=row["Status"],
-            criado_em=row["CriadoEm"]
+            criado_em=row["CriadoEm"],
+            endereco_entrega=row.get("EnderecoEntrega"),
+            forma_pagamento=row.get("FormaPagamento"),
+            valor_frete=row.get("ValorFrete"),
+            total_pago=row.get("TotalPago")
         )
 
 class SqlitePedidoItemModel:

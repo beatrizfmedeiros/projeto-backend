@@ -85,10 +85,20 @@ class PedidoController:
             return jsonify({"ok": False, "erro": f"Erro ao remover item: {str(e)}"}), 500
 
     def finalizar(self):
-        """Finaliza o carrinho ativo (Checkout)"""
+        """Finaliza o carrinho ativo (Checkout) usando dados de checkout congelados."""
         nome = g.current_user.nome
         try:
-            self.pedido_service.finalizar_carrinho(nome)
+            data = request.get_json(silent=True) or {}
+            # Expected fields: endereco_entrega, forma_pagamento, valor_frete, total_pago
+            from backend.domain.dto.finalizar_pedido_dto import FinalizarPedidoDTO
+            dto = FinalizarPedidoDTO(
+                endereco_entrega=data.get('endereco_entrega'),
+                forma_pagamento=data.get('forma_pagamento'),
+                valor_frete=data.get('valor_frete'),
+                total_pago=data.get('total_pago')
+            )
+            # Service now expects DTO
+            self.pedido_service.finalizar_carrinho(nome, dto)
             return jsonify({
                 "ok": True,
                 "mensagem": "Pedido finalizado com sucesso!"

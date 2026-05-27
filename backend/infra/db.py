@@ -44,6 +44,18 @@ def init_db():
                 FOREIGN KEY (UsuarioId) REFERENCES Usuarios(Id)
             )
         """)
+        
+        # Garantir colunas de congelamento no Pedido caso não existam
+        cursor = conn.execute("PRAGMA table_info(Pedidos)")
+        columns = [row['name'] for row in cursor.fetchall()]
+        if 'EnderecoEntrega' not in columns:
+            conn.execute("ALTER TABLE Pedidos ADD COLUMN EnderecoEntrega TEXT")
+        if 'FormaPagamento' not in columns:
+            conn.execute("ALTER TABLE Pedidos ADD COLUMN FormaPagamento TEXT")
+        if 'ValorFrete' not in columns:
+            conn.execute("ALTER TABLE Pedidos ADD COLUMN ValorFrete REAL")
+        if 'TotalPago' not in columns:
+            conn.execute("ALTER TABLE Pedidos ADD COLUMN TotalPago REAL")
 
         # Tabela Itens do Pedido
         conn.execute("""

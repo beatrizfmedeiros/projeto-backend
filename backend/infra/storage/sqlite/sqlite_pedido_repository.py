@@ -70,15 +70,19 @@ class SqlitePedidoRepository(PedidoRepository):
             )
             conn.commit()
 
-    def finalize_open_pedido(self, usuario_id: int) -> None:
+    def finalize_open_pedido(self, usuario_id: int, endereco_entrega: str = None, forma_pagamento: str = None, valor_frete: float = None, total_pago: float = None) -> None:
         with get_db() as conn:
             conn.execute(
                 """
                 UPDATE Pedidos
-                SET Status = 'FINALIZADO'
+                SET Status = 'FINALIZADO',
+                    EnderecoEntrega = ?,
+                    FormaPagamento = ?,
+                    ValorFrete = ?,
+                    TotalPago = ?
                 WHERE UsuarioId = ? AND Status = 'ABERTO'
                 """,
-                (usuario_id,),
+                (endereco_entrega, forma_pagamento, valor_frete, total_pago, usuario_id),
             )
             conn.commit()
 
