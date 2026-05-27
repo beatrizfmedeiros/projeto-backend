@@ -54,14 +54,9 @@ def auth_required(f):
                 g.auth_method = "Session"
                 return f(*args, **kwargs)
 
-        # 3. Se ambos falharem:
-        # Se for uma rota de API (/api/), retorna JSON de erro
-        if request.path.startswith("/api/"):
-            return jsonify({
-                "ok": False,
-                "erro": "Autenticação necessária. Envie o cabeçalho 'Authorization: Bearer <token_jwt>'."
-            }), 401
-
-        # Se for uma rota de página HTML normal, redireciona para a página de Login
-        return redirect(url_for("routes.login_page"))
+        # 3. Falha Geral: Sempre retorna JSON 401
+        return jsonify({
+            "ok": False,
+            "erro": "Autenticação necessária. Envie o cabeçalho 'Authorization: Bearer <token_jwt>'."
+        }), 401
     return decorated

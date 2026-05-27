@@ -7,19 +7,7 @@ class UsuarioController:
     def __init__(self, usuario_service: UsuarioService):
         self.usuario_service = usuario_service
 
-    def index(self):
-        nome = session.get("usuario_nome")
-        return render_template("index.html", usuario=nome)
 
-    def login_page(self):
-        if session.get("usuario_nome"):
-            return redirect(url_for("routes.index"))
-        return render_template("login.html")
-
-    def cadastro_page(self):
-        if session.get("usuario_nome"):
-            return redirect(url_for("routes.index"))
-        return render_template("cadastro.html")
 
     def cadastrar(self):
         dados = request.get_json(silent=True) or {}

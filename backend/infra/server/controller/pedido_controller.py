@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, session, jsonify
+from flask import request, jsonify, g
 from backend.domain.dto.pedido_dto import AdicionarItemDTO
 from backend.domain.service.pedido_service import PedidoService
 
@@ -6,40 +6,52 @@ class PedidoController:
     def __init__(self, pedido_service: PedidoService):
         self.pedido_service = pedido_service
 
-    def cardapio_page(self):
-        nome = session.get("usuario_nome")
-        produtos = self.pedido_service.obter_cardapio()
-        return render_template("cardapio.html", usuario=nome, produtos=produtos)
-
-    def sobre_page(self):
-        nome = session.get("usuario_nome")
-        return render_template("sobre.html", usuario=nome)
-
-    def carrinho_page(self):
-        nome = session.get("usuario_nome")
-        item_nome = (request.args.get("item") or "").strip()
-        if not item_nome:
-            return redirect(url_for("routes.cardapio_page"))
-
-        produto = self.pedido_service.obter_produto_por_nome(item_nome)
-        if not produto:
-            return redirect(url_for("routes.cardapio_page"))
-
-        return render_template(
-            "carrinho.html",
-            usuario=nome,
-            item_nome=produto.nome,
-            item_valor=f"{produto.preco:.2f}".replace(".", ","),
-        )
+    def obter_carrinho(self):
+        """Retorna todos os itens do carrinho ativo do usuário em formato JSON estruturado"""
+        nome = g.current_user.nome
+        try:
+            itens = self.pedido_service.obter_itens_carrinho(nome)
+            total = 0.0
+            itens_out = []
+            for it in itens:
+                total += it.subtotal
+                itens_out.append({
+                    "id": it.id,
+                    "nome": it.item_nome,
+                    "foto": it.item_foto,
+                    "valor_unitario": float(it.item_valor),
+                    "quantidade": int(it.quantidade),
+                    "observacao": it.observacao,
+                    "subtotal": float(it.subtotal)
+                })
+            return jsonify({
+                "ok": True,
+                "itens": itens_out,
+                "total": float(total)
+            })
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Erro ao buscar carrinho: {str(e)}"}), 500
 
     def adicionar_item(self):
-        nome = session.get("usuario_nome")
-        if not nome:
-            return redirect(url_for("routes.login_page"))
+        """Adiciona um item ao carrinho via form-data ou JSON payload"""
+        nome = g.current_user.nome
+        
+        # Suporta tanto form-data tradicional quanto payloads JSON
+        dados = request.get_json(silent=True) or {}
+        item = request.form.get("item")
+        if not item:
+            item = dados.get("item")
+        item = (item or "").strip()
 
-        item = (request.form.get("item") or "").strip()
-        personalizacao = (request.form.get("personalizacao") or "").strip()
-        quantidade = request.form.get("quantidade", "1").strip()
+        personalizacao = request.form.get("personalizacao")
+        if not personalizacao:
+            personalizacao = dados.get("personalizacao")
+        personalizacao = (personalizacao or "").strip()
+
+        quantidade = request.form.get("quantidade")
+        if not quantidade:
+            quantidade = dados.get("quantidade")
+        quantidade = str(quantidade or "1").strip()
 
         dto = AdicionarItemDTO(
             item_nome=item,
@@ -47,57 +59,41 @@ class PedidoController:
             observacao=personalizacao
         )
         try:
-            dto.validate()  # Valida contrato do input (Single Source of Truth)
+            dto.validate()  # Valida contrato sintático (Single Source of Truth)
             self.pedido_service.adicionar_item(nome, dto)
+            return jsonify({
+                "ok": True,
+                "mensagem": f"Item '{dto.item_nome}' adicionado ao carrinho com sucesso!"
+            }), 201
         except ValueError as e:
             return jsonify({"ok": False, "erro": str(e)}), 400
-        except Exception:
-            return redirect(url_for("routes.login_page"))
-
-        return redirect(url_for("routes.carrinho_page", item=dto.item_nome) + f"&saved=1&qtd={dto.quantidade}")
-
-    def meus_pedidos(self):
-        nome = session.get("usuario_nome")
-        if not nome:
-            return redirect(url_for("routes.login_page"))
-
-        itens = self.pedido_service.obter_itens_carrinho(nome)
-        total = 0.0
-        itens_out = []
-        for it in itens:
-            total += it.subtotal
-            itens_out.append({
-                "id": it.id,
-                "nome": it.item_nome,
-                "foto": it.item_foto,
-                "valor": it.item_valor,
-                "quantidade": it.quantidade,
-                "observacao": it.observacao,
-                "valor_formatado": it.valor_formatado,
-            })
-
-        total_formatado = f"{total:.2f}".replace('.', ',')
-        return render_template(
-            "meus_pedidos.html",
-            usuario=nome, itens=itens_out, total_formatado=total_formatado
-        )
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Erro interno no servidor: {str(e)}"}), 500
 
     def remover_item(self, pedido_item_id):
-        nome = session.get("usuario_nome")
-        if not nome:
-            return redirect(url_for("routes.login_page"))
+        """Remove um item específico do carrinho"""
+        nome = g.current_user.nome
         try:
             self.pedido_service.remover_item_carrinho(nome, pedido_item_id)
-        except Exception:
-            return redirect(url_for("routes.login_page"))
-        return redirect(url_for("routes.meus_pedidos"))
+            return jsonify({
+                "ok": True,
+                "mensagem": "Item removido do carrinho com sucesso!"
+            })
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Erro ao remover item: {str(e)}"}), 500
 
     def finalizar(self):
-        nome = session.get("usuario_nome")
-        if not nome:
-            return redirect(url_for("routes.login_page"))
+        """Finaliza o carrinho ativo (Checkout)"""
+        nome = g.current_user.nome
         try:
             self.pedido_service.finalizar_carrinho(nome)
-        except Exception:
-            return redirect(url_for("routes.login_page"))
-        return redirect(url_for("routes.meus_pedidos"))
+            return jsonify({
+                "ok": True,
+                "mensagem": "Pedido finalizado com sucesso!"
+            })
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Erro ao finalizar pedido: {str(e)}"}), 500
