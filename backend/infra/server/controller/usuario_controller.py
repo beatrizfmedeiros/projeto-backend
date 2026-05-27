@@ -22,44 +22,43 @@ class UsuarioController:
 
     def cadastrar(self):
         dados = request.get_json(silent=True) or {}
-        for campo in ("nome", "email", "senha"):
-            if not dados.get(campo, "").strip():
-                return jsonify({"ok": False, "erro": f"Campo '{campo}' é obrigatório."}), 400
-
         dto = UsuarioCadastroDTO(
-            nome=dados["nome"].strip(),
-            email=dados["email"].strip().lower(),
-            senha=dados["senha"],
-            telefone=dados.get("telefone", "").strip(),
-            cpf=dados.get("cpf", "").strip(),
-            endereco=dados.get("endereco", "").strip(),
-            referencia=dados.get("referencia", "").strip()
+            nome=dados.get("nome"),
+            email=dados.get("email"),
+            senha=dados.get("senha"),
+            telefone=dados.get("telefone"),
+            cpf=dados.get("cpf"),
+            endereco=dados.get("endereco"),
+            referencia=dados.get("referencia")
         )
         try:
+            dto.validate()  # Valida contrato sintático (Single Source of Truth)
             self.usuario_service.cadastrar(dto)
             return jsonify({"ok": True, "mensagem": f"Bem-vindo, {dto.nome}! Cadastro realizado."})
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
         except Exception as e:
             err_msg = str(e).lower()
             if "unique" in err_msg or "integrity" in err_msg:
                 return jsonify({"ok": False, "erro": "Este e-mail já está cadastrado."}), 409
-            return jsonify({"ok": False, "erro": str(e)}), 500
+            return jsonify({"ok": False, "erro": "Erro interno no servidor."}), 500
 
     def autenticar(self):
         dados = request.get_json(silent=True) or {}
-        email = dados.get("email", "").strip().lower()
-        senha = dados.get("senha", "")
-        if not email or not senha:
-            return jsonify({"ok": False, "erro": "Preencha e-mail e senha."}), 400
-
-        dto = UsuarioLoginDTO(email, senha)
-        usuario = self.usuario_service.autenticar(dto)
-
-        if usuario:
-            session["usuario_id"] = usuario.id
-            session["usuario_nome"] = usuario.nome
-            return jsonify({"ok": True, "mensagem": f"Bem-vindo de volta, {usuario.nome}!", "nome": usuario.nome})
-
-        return jsonify({"ok": False, "erro": "E-mail ou senha incorretos."}), 401
+        dto = UsuarioLoginDTO(
+            email=dados.get("email"),
+            senha=dados.get("senha")
+        )
+        try:
+            dto.validate()  # Valida contrato sintático (Single Source of Truth)
+            usuario = self.usuario_service.autenticar(dto)
+            if usuario:
+                session["usuario_id"] = usuario.id
+                session["usuario_nome"] = usuario.nome
+                return jsonify({"ok": True, "mensagem": f"Bem-vindo de volta, {usuario.nome}!", "nome": usuario.nome})
+            return jsonify({"ok": False, "erro": "E-mail ou senha incorretos."}), 401
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
 
     def logout(self):
         session.clear()

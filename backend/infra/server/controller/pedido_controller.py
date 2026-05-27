@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, session
+from flask import request, redirect, url_for, render_template, session, jsonify
 from backend.domain.dto.pedido_dto import AdicionarItemDTO
 from backend.domain.service.pedido_service import PedidoService
 
@@ -42,12 +42,6 @@ class PedidoController:
         personalizacao = (request.form.get("personalizacao") or "").strip()
         quantidade = request.form.get("quantidade", "1").strip()
 
-        try:
-            qtd = int(quantidade)
-            if qtd < 1: qtd = 1
-        except Exception:
-            qtd = 1
-
         valores = {
             "Calabresa": 39.90, "Mussarela": 34.90, "Quatro Queijos": 49.90,
             "Brigadeiro": 29.90, "M&M": 32.90, "Romeu & Julieta": 31.90,
@@ -64,14 +58,17 @@ class PedidoController:
 
         dto = AdicionarItemDTO(
             item_nome=item, item_foto=item_foto, item_valor=item_valor,
-            quantidade=qtd, observacao=personalizacao
+            quantidade=quantidade, observacao=personalizacao
         )
         try:
+            dto.validate()  # Valida contrato do input (Single Source of Truth)
             self.pedido_service.adicionar_item(nome, dto)
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
         except Exception:
             return redirect(url_for("routes.login_page"))
 
-        return redirect(url_for("routes.carrinho_page", item=item) + f"&saved=1&qtd={qtd}")
+        return redirect(url_for("routes.carrinho_page", item=item) + f"&saved=1&qtd={dto.quantidade}")
 
     def meus_pedidos(self):
         nome = session.get("usuario_nome")
