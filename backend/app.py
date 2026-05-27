@@ -4,7 +4,12 @@ import sqlite3
 import hashlib
 import os
 
-app = Flask(__name__)
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+app = Flask(
+    __name__,
+    template_folder=os.path.join(backend_dir, "..", "frontend", "templates"),
+    static_folder=os.path.join(backend_dir, "..", "frontend", "static")
+)
 app.secret_key = os.environ.get("SECRET_KEY", "pizzaria404_dev_secret")
 CORS(app)
 
