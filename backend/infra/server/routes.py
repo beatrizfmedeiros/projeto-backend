@@ -9,6 +9,8 @@ from backend.infra.server.controller.pedido_controller import PedidoController
 
 from backend.infra.storage.sqlite.sqlite_produto_repository import SqliteProdutoRepository
 
+from backend.infra.security.jwt_auth import auth_required
+
 bp = Blueprint("routes", __name__)
 
 # Setup de injeções (Dependency Injection)
@@ -39,6 +41,7 @@ def cadastro_page():
     return usuario_controller.cadastro_page()
 
 @bp.route("/cardapio")
+@auth_required
 def cardapio_page():
     return pedido_controller.cardapio_page()
 
@@ -47,10 +50,12 @@ def sobre_page():
     return pedido_controller.sobre_page()
 
 @bp.route("/carrinho")
+@auth_required
 def carrinho_page():
     return pedido_controller.carrinho_page()
 
 @bp.route("/api/pedido", methods=["POST"])
+@auth_required
 def api_pedido():
     return pedido_controller.adicionar_item()
 
@@ -71,6 +76,7 @@ def api_logout():
     return usuario_controller.logout()
 
 @bp.route("/meus-pedidos")
+@auth_required
 def meus_pedidos_page():
     return pedido_controller.meus_pedidos()
 
@@ -79,9 +85,11 @@ def api_me():
     return usuario_controller.api_me()
 
 @bp.route("/api/pedido_item/delete/<int:pedido_item_id>", methods=["POST"])
+@auth_required
 def api_pedido_item_delete(pedido_item_id: int):
     return pedido_controller.remover_item(pedido_item_id)
 
 @bp.route("/api/pedido/finalizar", methods=["GET", "POST"])
+@auth_required
 def api_pedido_finalizar():
     return pedido_controller.finalizar()
