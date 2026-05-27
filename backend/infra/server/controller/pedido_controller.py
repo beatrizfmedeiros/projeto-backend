@@ -81,8 +81,12 @@ class PedidoController:
         for it in itens:
             total += it.subtotal
             itens_out.append({
-                "nome": it.item_nome, "foto": it.item_foto, "valor": it.item_valor,
-                "quantidade": it.quantidade, "observacao": it.observacao,
+                "id": it.id,
+                "nome": it.item_nome,
+                "foto": it.item_foto,
+                "valor": it.item_valor,
+                "quantidade": it.quantidade,
+                "observacao": it.observacao,
                 "valor_formatado": it.valor_formatado,
             })
 
