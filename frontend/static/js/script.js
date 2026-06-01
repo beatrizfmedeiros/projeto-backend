@@ -58,6 +58,11 @@ function showSlide(n) {
   slides.forEach(s => s.classList.remove('active'));
   currentSlide = (n + slides.length) % slides.length;
   slides[currentSlide].classList.add('active');
+  
+  const slider = document.querySelector('.slider');
+  if (slider) {
+    slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+  }
 }
 
 function nextSlide() { showSlide(currentSlide + 1); }

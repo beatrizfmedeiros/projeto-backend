@@ -361,12 +361,33 @@ header {
 .slide {
   min-width: 100%;
   box-sizing: border-box;
-  padding: 20px;
+  padding: 20px 40px;
   opacity: 0;
   transition: opacity 0.5s;
+  text-align: center;
 }
 
 .slide.active { opacity: 1; }
+
+.slide blockquote {
+  font-size: 1.25rem;
+  font-style: italic;
+  color: #333333;
+  margin: 0 auto 15px auto;
+  line-height: 1.6;
+  max-width: 500px;
+  border: none;
+  padding: 0;
+}
+
+.slide p {
+  font-weight: 700;
+  color: #970000; /* Vermelho da marca */
+  margin: 0;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 .slider-btn {
   position: absolute;
