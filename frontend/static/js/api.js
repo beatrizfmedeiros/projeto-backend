@@ -116,19 +116,26 @@ async function updateNavbar() {
     if (data.logado) {
       if (desktopNav) {
         desktopNav.innerHTML = `
-          <div class="user-left">
-            <a href="/meus-pedidos" class="cart-link" title="Meus pedidos">
-              <i class="fa-solid fa-cart-shopping"></i>
-            </a>
-            <span>Olá, ${data.nome}!</span>
+          <a href="/meus-pedidos" class="nav-link-icon animate-fade" data-tooltip="Carrinho & Pedidos" style="margin-right: 15px;">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </a>
+          <div class="user-dropdown-container">
+            <button class="user-dropdown-btn nav-link-icon" id="user-menu-btn" data-tooltip="Minha Conta">
+              <i class="fa-solid fa-user"></i>
+            </button>
+            <div class="user-dropdown-menu" id="user-dropdown-menu">
+              <div class="user-dropdown-header">Olá, ${data.nome}!</div>
+              <a href="/meus-pedidos" class="user-dropdown-item"><i class="fa-solid fa-clock-rotate-left"></i> Meus Pedidos</a>
+              <div class="user-dropdown-divider"></div>
+              <a href="#" class="user-dropdown-item text-danger" onclick="fazerLogout(event)"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
+            </div>
           </div>
-          <button id="logout-btn" title="Sair" onclick="fazerLogout(event)">Sair</button>
         `;
       }
       if (mobileNav) {
         mobileNav.innerHTML = `
-          <li class="nav-item"><a href="/meus-pedidos">Carrinho/Pedidos</a></li>
-          <li class="nav-item"><a href="#" id="logout-btn-mobile" onclick="fazerLogout(event)">Sair (${data.nome})</a></li>
+          <li class="nav-item"><a href="/meus-pedidos"><i class="fa-solid fa-cart-shopping me-2"></i> Carrinho/Pedidos</a></li>
+          <li class="nav-item"><a href="#" id="logout-btn-mobile" onclick="fazerLogout(event)"><i class="fa-solid fa-right-from-bracket me-2"></i> Sair (${data.nome})</a></li>
         `;
       }
     } else {
@@ -145,5 +152,18 @@ window.fazerLogout = function(e) {
   localStorage.removeItem('token');
   window.location.href = '/';
 };
+
+// Gerenciamento dinâmico do clique fora para fechar o menu dropdown
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('#user-menu-btn');
+  const menu = document.getElementById('user-dropdown-menu');
+  
+  if (btn) {
+    e.stopPropagation();
+    menu.classList.toggle('show');
+  } else if (menu && !e.target.closest('#user-dropdown-menu')) {
+    menu.classList.remove('show');
+  }
+});
 
 document.addEventListener('DOMContentLoaded', updateNavbar);
