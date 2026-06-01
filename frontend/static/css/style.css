@@ -117,9 +117,78 @@ header {
 
 .nav-item:hover a { color: #F4D03F; }
 
-.nav-item.active a {
+/* ÍCONES PREMIUM E TOOLTIPS DA NAVBAR DESKTOP */
+.nav-link-icon {
+  position: relative;
+  font-size: 20px;
+  color: #FDF6EC !important;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: all 0.25s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link-icon:hover {
+  color: #F4D03F !important;
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.nav-item.active .nav-link-icon {
+  color: #F4D03F !important;
+  border-bottom: 2px solid #F4D03F;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Tooltip Customizado em CSS Puro */
+.nav-link-icon::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -42px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #222222;
   color: #FDF6EC;
-  border-bottom: 3px solid #ffe100;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.nav-link-icon::before {
+  content: '';
+  position: absolute;
+  bottom: -17px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #222222 transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-in-out;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.nav-link-icon:hover::after,
+.nav-link-icon:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* AUTH */
