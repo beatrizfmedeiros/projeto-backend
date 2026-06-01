@@ -4,98 +4,174 @@
 {% block extra_css %}
 <style>
   body { padding-top: 104px; }
-  .pedido-item-img { width: 90px; height: 70px; object-fit: cover; border-radius: 8px; }
-  .pedido-header { background-color: #970000; color: #ffe066; }
+  .pedido-item-img { width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid var(--glass-border); }
+  .pedido-header { background: rgba(255,255,255,0.02); color: var(--accent-gold); border-bottom: 1px solid var(--glass-border); }
+  .checkout-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container pb-5">
   <div class="text-center mt-4 mb-3">
-    <h2>Meus pedidos</h2>
+    <h2>Minha Conta & Pedidos</h2>
   </div>
 
-  {% if usuario %}
-    <div class="mb-3 text-center">
-      <h5 class="mb-0">Pedido do(a): <em>{{ usuario }}</em></h5>
+  <div id="auth-warning-msg" class="text-center py-5 d-none">
+    <div class="card p-4 d-inline-block" style="max-width: 450px;">
+      <h5 class="text-warning mb-3"><i class="fa-solid fa-circle-exclamation"></i> Autenticação Necessária</h5>
+      <p class="text-muted">Por favor, realize login ou crie uma conta para visualizar seu carrinho e acompanhar seus pedidos.</p>
+      <div class="d-flex gap-2 justify-content-center mt-4">
+        <a href="/login" class="btn btn-warning fw-bold px-4">Login</a>
+        <a href="/cadastro" class="btn btn-outline-light px-4">Cadastro</a>
+      </div>
     </div>
-  {% endif %}
+  </div>
 
-  <div class="card shadow-sm border-0">
-    <div class="card-header pedido-header text-center">
-      <h5 class="mb-0">Itens salvos</h5>
+  <div id="account-dashboard" class="d-none">
+    
+    <!-- 1. PAINEL DE RASTREAMENTO DO PEDIDO ATIVO (SE HOUVER) -->
+    <div id="active-tracking-panel" class="d-none">
+      <!-- Injetado dinamicamente -->
     </div>
 
-    <div class="card-body">
-      {% if itens and itens|length > 0 %}
-        <div class="list-group list-group-flush">
-          {% for it in itens %}
-            <div class="list-group-item">
-              <div class="row align-items-center g-3">
-                <div class="col-auto">
-                  {% if it.foto %}
-                    <img
-                      class="pedido-item-img"
-                      src="{{ url_for('static', filename='image/' + it.foto) }}"
-                      alt="{{ it.nome }}"
-                    />
-                  {% else %}
-                    <div class="pedido-item-img" style="background:#eee;
-                      display:flex;align-items:center;justify-content:center;color:#666; font-size:12px;">
-                      SEM
-                    </div>
-                  {% endif %}
-                </div>
-
-                <div class="col">
-                  <div class="fw-bold">{{ it.nome }}</div>
-                  <div class="text-muted small">
-                    Qtd: {{ it.quantidade }}
-                    {% if it.observacao %}
-                      • Obs: {{ it.observacao }}
-                    {% endif %}
-                  </div>
-                </div>
-
-                <div class="col-auto text-end">
-                  <div class="fw-bold">R$ {{ it.valor_formatado }}</div>
-                  <div class="mt-2">
-                    <form method="POST" action="/api/pedido_item/delete/{{ it.id }}" style="display:inline;">
-                      <button type="submit" class="btn btn-sm btn-outline-danger">
-                        Excluir
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
+    <!-- 2. CARRINHO DE COMPRAS / ITENS SALVOS -->
+    <div id="active-cart-panel" class="card shadow-sm border-0 mb-4 d-none">
+      <div class="card-header pedido-header text-center">
+        <h5 class="mb-0 fw-bold">🛒 Itens no seu Carrinho</h5>
+      </div>
+      <div class="card-body">
+        <div id="cart-items-container" class="list-group list-group-flush">
+          <!-- Itens do carrinho injetados por JS -->
         </div>
 
         <div class="mt-4">
-          <div class="row g-2 align-items-center">
-            <div class="col">
-              <div class="fs-4 fw-bold">Total: R$ {{ total_formatado }}</div>
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-md-6 text-center text-md-start">
+              <div class="fs-4 fw-bold text-white">Total: <span id="cart-total-value" class="text-warning">R$ 0,00</span></div>
             </div>
-            <div class="col-auto d-flex gap-2">
-              <a href="/cardapio" class="btn btn-outline-warning">Continuar comprando</a>
-              <a href="/api/pedido/finalizar" class="btn btn-warning fw-bold">Finalizar pedido</a>
+            <div class="col-12 col-md-6 d-flex gap-2 justify-content-center justify-content-md-end">
+              <a href="/cardapio" class="btn btn-outline-warning">Continuar Comprando</a>
+              <button id="btn-show-checkout" class="btn btn-warning fw-bold px-4">Finalizar Pedido</button>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
-      {% else %}
-        <div class="text-center py-4">
-          <p class="mb-2">Nenhum item salvo ainda.</p>
-          <a href="/cardapio" class="btn btn-outline-warning">Ir para o cardápio</a>
+    <!-- 3. TELA DE CHECKOUT (ENDEREÇO E PAGAMENTO) -->
+    <div id="checkout-panel" class="checkout-section d-none">
+      <h4 class="text-warning mb-4 fw-bold"><i class="fa-solid fa-credit-card"></i> Dados de Checkout</h4>
+      <form id="form-checkout">
+        <div class="row g-3">
+          <div class="col-12 col-md-8">
+            <label for="checkout-endereco" class="form-label">Endereço de Entrega</label>
+            <input type="text" class="form-control" id="checkout-endereco" required placeholder="Rua das Pizzas, 123 - Centro" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="checkout-pagamento" class="form-label">Forma de Pagamento</label>
+            <select class="form-select" id="checkout-pagamento" required>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Cartão de Débito">Cartão de Débito</option>
+              <option value="PIX">PIX</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Valor do Frete</label>
+            <input type="text" class="form-control" id="checkout-frete" readonly value="R$ 5,00" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Total a Pagar</label>
+            <input type="text" class="form-control text-warning fw-bold" id="checkout-total" readonly value="R$ 0,00" />
+          </div>
         </div>
-      {% endif %}
+        <div class="d-flex gap-2 justify-content-end mt-4">
+          <button type="button" id="btn-cancel-checkout" class="btn btn-outline-light">Voltar ao Carrinho</button>
+          <button type="submit" class="btn btn-warning fw-bold px-4">Confirmar e Finalizar Pedido</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 4. HISTÓRICO DE PEDIDOS ANTERIORES -->
+    <div class="card shadow-sm border-0 mt-5">
+      <div class="card-header pedido-header text-center">
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Pedidos</h5>
+      </div>
+      <div class="card-body">
+        <div id="history-items-container">
+          <!-- Injetado dinamicamente -->
+          <div class="text-center text-muted py-4">Nenhum pedido finalizado anteriormente.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE DETALHES DO PEDIDO -->
+<div class="modal fade" id="pedidoDetalhesModal" tabindex="-1" aria-labelledby="pedidoDetalhesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger fw-bold" id="pedidoDetalhesModalLabel">
+          <i class="fa-solid fa-receipt"></i> Detalhes do Pedido #<span id="detail-order-id"></span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-6 text-start">
+            <h6 class="text-danger fw-bold">Informações de Entrega</h6>
+            <p class="mb-1 text-muted small">Endereço:</p>
+            <p id="detail-endereco" class="fw-medium mb-3 text-dark"></p>
+            <p class="mb-1 text-muted small">Forma de Pagamento:</p>
+            <p id="detail-pagamento" class="fw-medium text-dark"></p>
+          </div>
+          <div class="col-12 col-md-6 text-md-end text-start">
+            <h6 class="text-danger fw-bold text-md-end text-start">Resumo Financeiro</h6>
+            <p class="mb-1 text-muted small">Frete: <span id="detail-frete" class="text-dark fw-medium">R$ 5,00</span></p>
+            <p class="mb-1 text-muted small">Total Pago: <span id="detail-total" class="text-danger fw-bold">R$ 0,00</span></p>
+            <p class="mb-1 text-muted small">Status: <span id="detail-status" class="badge bg-warning text-dark"></span></p>
+            <p class="mb-0 text-muted small">Data: <span id="detail-data" class="text-dark font-monospace"></span></p>
+          </div>
+        </div>
+        
+        <h6 class="text-danger fw-bold mb-3 text-start">Itens do Pedido</h6>
+        <div class="table-responsive">
+          <table class="table table-striped table-hover align-middle text-start">
+            <thead>
+              <tr class="text-muted">
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Observação</th>
+                <th class="text-end">Preço</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="detail-items-body">
+              <!-- Preenchido dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer border-top border-secondary-subtle">
+        <button type="button" class="btn btn-outline-light px-4" data-bs-dismiss="modal">Fechar</button>
+      </div>
     </div>
   </div>
 </div>
 
-<footer class="text-center py-3">
+<footer class="text-center py-3 mt-5">
   <p class="mb-0">&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
 </footer>
 {% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
+{% endblock %}

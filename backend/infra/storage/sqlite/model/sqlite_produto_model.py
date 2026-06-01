@@ -1,4 +1,5 @@
 import json
+from backend.domain.entity.produto import Produto
 
 class SqliteProdutoModel:
     @staticmethod

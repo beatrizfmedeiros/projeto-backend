@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template
 
 from backend.infra.storage.sqlite.sqlite_usuario_repository import SqliteUsuarioRepository
 from backend.infra.storage.sqlite.sqlite_pedido_repository import SqlitePedidoRepository
@@ -53,6 +53,43 @@ usuario_controller = UsuarioController(usuario_service)
 pedido_controller = PedidoController(pedido_service)
 
 # ─────────────────────────────────────────────
+# Rotas – páginas do frontend
+# ─────────────────────────────────────────────
+
+@bp.route("/")
+def index():
+    return render_template("index.html")
+
+@bp.route("/login")
+def login_page():
+    return render_template("login.html")
+
+@bp.route("/cadastro")
+def cadastro_page():
+    return render_template("cadastro.html")
+
+@bp.route("/cardapio")
+def cardapio_page():
+    produtos = produto_repo.get_all()
+    return render_template("cardapio.html", produtos=produtos)
+
+@bp.route("/sobre")
+def sobre_page():
+    return render_template("sobre.html")
+
+@bp.route("/carrinho")
+def carrinho_page():
+    from flask import request
+    item_nome = request.args.get("item", "")
+    produto = produto_repo.get_by_name(item_nome)
+    item_valor = float(produto.preco) if produto else 0.0
+    return render_template("carrinho.html", item_nome=item_nome, item_valor=item_valor)
+
+@bp.route("/meus-pedidos")
+def meus_pedidos_page():
+    return render_template("meus_pedidos.html")
+
+# ─────────────────────────────────────────────
 # APIs – endpoints de dados 100% RESTful
 # ─────────────────────────────────────────────
 
@@ -99,6 +136,39 @@ def api_pedido_status(pedido_id: int):
     if not pedido:
         return jsonify({"error": "Pedido not found"}), 404
     return jsonify({"pedido_id": pedido.id, "status": pedido.status})
+
+@bp.route("/api/pedido/<int:pedido_id>", methods=["GET"])
+@auth_required
+def api_pedido_detalhes(pedido_id: int):
+    from flask import g
+    pedido = pedido_repo.get_pedido_by_id(pedido_id)
+    if not pedido:
+        return jsonify({"ok": False, "erro": "Pedido not found."}), 404
+    if pedido.usuario_id != g.current_user.id:
+        return jsonify({"ok": False, "erro": "Access denied."}), 403
+    itens = pedido_repo.get_pedido_items(pedido_id)
+    itens_out = []
+    for it in itens:
+        itens_out.append({
+            "id": it.id,
+            "nome": it.item_nome,
+            "foto": it.item_foto,
+            "valor_unitario": float(it.item_valor),
+            "quantidade": int(it.quantidade),
+            "observacao": it.observacao,
+            "subtotal": float(it.subtotal)
+        })
+    return jsonify({
+        "ok": True,
+        "pedido_id": pedido.id,
+        "status": pedido.status,
+        "data": pedido.criado_em,
+        "endereco_entrega": pedido.endereco_entrega,
+        "forma_pagamento": pedido.forma_pagamento,
+        "valor_frete": float(pedido.valor_frete or 0.0),
+        "total_pago": float(pedido.total_pago or 0.0),
+        "itens": itens_out
+    })
 
 @bp.route("/api/pedidos/historico", methods=["GET"])
 @auth_required

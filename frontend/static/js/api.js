@@ -1,4 +1,4 @@
-// api.js – login, cadastro e logout via fetch
+// api.js – login, cadastro e logout via fetch com suporte a JWT no localStorage
 
 // ── CADASTRO ────────────────────────────────────────────────
 const formCadastro = document.getElementById('cadastro');
@@ -27,10 +27,14 @@ if (formCadastro) {
       });
       const data = await res.json();
       if (data.ok) {
-        alert(data.mensagem);
+        // Armazena o token se for retornado no cadastro
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        alert(data.mensagem || 'Cadastro realizado com sucesso!');
         window.location.href = '/login';
       } else {
-        alert('Erro: ' + data.erro);
+        alert('Erro: ' + (data.erro || 'Falha no cadastro.'));
         btn.disabled = false;
         btn.textContent = 'Cadastrar';
       }
@@ -63,11 +67,12 @@ if (formLogin) {
         body:    JSON.stringify(dados),
       });
       const data = await res.json();
-      if (data.ok) {
-        alert(data.mensagem);
+      if (data.ok && data.token) {
+        // Armazena o token JWT no localStorage
+        localStorage.setItem('token', data.token);
         window.location.href = '/';
       } else {
-        alert('Erro: ' + data.erro);
+        alert('Erro: ' + (data.erro || 'Credenciais inválidas.'));
         btn.disabled = false;
         btn.textContent = 'Acessar';
       }
@@ -78,3 +83,67 @@ if (formLogin) {
     }
   });
 }
+
+// ── FLUXO DE NAVEGAÇÃO DINÂMICO (JWT) ──────────────────────────
+async function updateNavbar() {
+  const token = localStorage.getItem('token');
+  const desktopNav = document.getElementById('auth-nav-desktop');
+  const mobileNav = document.getElementById('auth-nav-mobile');
+
+  if (!token) {
+    if (desktopNav) {
+      desktopNav.innerHTML = `
+        <button onclick="window.location.href='/login'">Login</button>
+        <button onclick="window.location.href='/cadastro'">Cadastro</button>
+      `;
+    }
+    if (mobileNav) {
+      mobileNav.innerHTML = `
+        <li class="nav-item"><a href="/login">Login</a></li>
+        <li class="nav-item"><a href="/cadastro">Cadastro</a></li>
+      `;
+    }
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await res.json();
+    if (data.logado) {
+      if (desktopNav) {
+        desktopNav.innerHTML = `
+          <div class="user-left">
+            <a href="/meus-pedidos" class="cart-link" title="Meus pedidos">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </a>
+            <span>Olá, ${data.nome}!</span>
+          </div>
+          <button id="logout-btn" title="Sair" onclick="fazerLogout(event)">Sair</button>
+        `;
+      }
+      if (mobileNav) {
+        mobileNav.innerHTML = `
+          <li class="nav-item"><a href="/meus-pedidos">Carrinho/Pedidos</a></li>
+          <li class="nav-item"><a href="#" id="logout-btn-mobile" onclick="fazerLogout(event)">Sair (${data.nome})</a></li>
+        `;
+      }
+    } else {
+      localStorage.removeItem('token');
+      updateNavbar();
+    }
+  } catch (err) {
+    console.error("Erro ao validar sessão:", err);
+  }
+}
+
+window.fazerLogout = function(e) {
+  e && e.preventDefault();
+  localStorage.removeItem('token');
+  window.location.href = '/';
+};
+
+document.addEventListener('DOMContentLoaded', updateNavbar);

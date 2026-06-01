@@ -6,7 +6,13 @@ from backend.infra.server.routes import bp as routes_bp
 
 def bootstrap_app():
     """Inicializa a aplicação Flask puro como API REST, banco de dados e rotas"""
-    app = Flask(__name__)
+    # Caminhos absolutos para servir o frontend
+    backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    project_dir = os.path.dirname(backend_dir)
+    template_dir = os.path.join(project_dir, "frontend", "templates")
+    static_dir = os.path.join(project_dir, "frontend", "static")
+
+    app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
     app.secret_key = os.environ.get("SECRET_KEY", "pizzaria404_dev_secret_key_secure_32bytes")
     CORS(app)
     # Registra as rotas modularizadas

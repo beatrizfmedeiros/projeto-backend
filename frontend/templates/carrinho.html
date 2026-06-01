@@ -34,7 +34,7 @@
             </div>
           </div>
 
-          <form method="POST" action="{{ url_for('api_pedido') }}">
+          <form id="form-personalizar">
 
             <input type="hidden" name="item" value="{{ item_nome }}" />
 
@@ -92,9 +92,8 @@
               {% endif %}
 
 
-              <!-- Botão voltar -->
               <a
-                href="{{ url_for('cardapio_page') }}"
+                href="{{ url_for('routes.cardapio_page') }}"
                 class="btn btn-outline-warning pedido-btn"
               >
                 Voltar ao cardápio
@@ -111,9 +110,49 @@
 
 </div>
 
-<footer class="text-center py-3">
-  <p class="mb-0">
-    &copy; 2025 Pizzaria 404. Todos os direitos reservados.
-  </p>
 </footer>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const form = document.getElementById('form-personalizar');
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Por favor, faça login para adicionar itens ao carrinho.");
+      window.location.href = '/login';
+      return;
+    }
+    
+    const item = form.querySelector('input[name="item"]').value;
+    const personalizacao = document.getElementById('personalizacao').value;
+    const quantidade = document.getElementById('quantidade').value;
+    
+    try {
+      const res = await fetch('/api/pedido', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          item: item,
+          personalizacao: personalizacao,
+          quantidade: quantidade
+        })
+      });
+      const data = await res.json();
+      if (res.status === 201 || data.ok) {
+        window.location.href = '/meus-pedidos';
+      } else {
+        alert("Erro: " + data.erro);
+      }
+    } catch(err) {
+      alert("Erro ao conectar ao servidor.");
+    }
+  });
+}
+</script>
 {% endblock %}

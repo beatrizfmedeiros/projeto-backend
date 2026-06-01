@@ -17,7 +17,7 @@ class SqlitePedidoRepository(PedidoRepository):
     def save_pedido(self, pedido: Pedido) -> int:
         with get_db() as conn:
             cur = conn.execute(
-                "INSERT INTO Pedidos (UsuarioId, Status) VALUES (?, 'RECEBIDO')",
+                "INSERT INTO Pedidos (UsuarioId, Status) VALUES (?, 'ABERTO')",
                 (pedido.usuario_id,),
             )
             conn.commit()
@@ -129,7 +129,7 @@ class SqlitePedidoRepository(PedidoRepository):
     def get_finalized_pedidos(self, usuario_id: int) -> List[Pedido]:
         with get_db() as conn:
             rows = conn.execute(
-                "SELECT * FROM Pedidos WHERE UsuarioId = ? AND Status = 'FINALIZADO' ORDER BY Id DESC",
+                "SELECT * FROM Pedidos WHERE UsuarioId = ? AND Status != 'ABERTO' ORDER BY Id DESC",
                 (usuario_id,)
             ).fetchall()
             return [SqlitePedidoModel.to_entity(r) for r in rows]
