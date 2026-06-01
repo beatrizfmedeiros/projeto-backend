@@ -296,8 +296,57 @@ async function showOrderDetails(pedidoId) {
       document.getElementById('detail-total').textContent = `R$ ${data.total_pago.toFixed(2).replace('.', ',')}`;
       
       const badge = document.getElementById('detail-status');
-      badge.textContent = formatStatus(data.status);
-      badge.className = `badge ${data.status === 'ENTREGUE' ? 'bg-success' : 'bg-warning text-dark'}`;
+      if (badge) {
+        badge.textContent = formatStatus(data.status);
+        badge.className = `badge ${data.status === 'ENTREGUE' ? 'bg-success' : 'bg-warning text-dark'}`;
+      }
+      
+      // Atualiza o stepper do modal de forma interativa e elegante
+      const modalStatusBadge = document.getElementById('modal-status-badge');
+      if (modalStatusBadge) {
+        modalStatusBadge.textContent = formatStatus(data.status);
+        modalStatusBadge.className = `badge rounded-pill px-3 py-1 ${data.status === 'ENTREGUE' ? 'bg-success text-white' : 'bg-warning text-dark'}`;
+      }
+      
+      const steps = ["RECEBIDO", "PREPARANDO", "EM_ROTA_DE_ENTREGA", "ENTREGUE"];
+      const currentIdx = steps.indexOf(data.status);
+      
+      // Atualiza largura da linha do progresso
+      const progressFill = document.getElementById('modal-progress-fill');
+      if (progressFill) {
+        const pct = currentIdx <= 0 ? 0 : (currentIdx / (steps.length - 1)) * 100;
+        progressFill.style.width = `${pct}%`;
+      }
+      
+      // Atualiza cada passo do modal
+      document.querySelectorAll('#pedidoDetalhesModal .modal-step').forEach(stepEl => {
+        const stepName = stepEl.getAttribute('data-step');
+        const stepIdx = steps.indexOf(stepName);
+        const iconEl = stepEl.querySelector('.modal-step-icon');
+        const labelEl = stepEl.querySelector('.modal-step-label');
+        
+        if (stepIdx < currentIdx) {
+          // Concluído
+          iconEl.style.backgroundColor = '#27ae60';
+          iconEl.style.borderColor = '#27ae60';
+          iconEl.style.color = '#fff';
+          labelEl.className = 'modal-step-label d-block mt-2 fw-semibold text-success';
+        } else if (stepIdx === currentIdx) {
+          // Ativo
+          iconEl.style.backgroundColor = '#970000';
+          iconEl.style.borderColor = '#970000';
+          iconEl.style.color = '#fff';
+          iconEl.classList.add('animate-pulse');
+          labelEl.className = 'modal-step-label d-block mt-2 fw-bold text-danger';
+        } else {
+          // Pendente
+          iconEl.style.backgroundColor = '#fff';
+          iconEl.style.borderColor = '#cbd5e1';
+          iconEl.style.color = '#64748b';
+          iconEl.classList.remove('animate-pulse');
+          labelEl.className = 'modal-step-label d-block mt-2 fw-semibold text-muted';
+        }
+      });
       
       document.getElementById('detail-data').textContent = data.data;
       

@@ -480,8 +480,8 @@ footer {
   transform: scale(1.1);
 }
 
-/* MODAIS */
-.modal {
+/* MODAIS LEGACY */
+.legacy-modal {
   display: none;
   position: fixed;
   z-index: 200;
@@ -493,7 +493,7 @@ footer {
   align-items: center;
 }
 
-.modal-content {
+.legacy-modal-content {
   background: #fff;
   padding: 20px 30px;
   border-radius: 10px;
@@ -508,7 +508,7 @@ footer {
   to   { opacity: 1; transform: scale(1); }
 }
 
-.modal-content .close {
+.legacy-modal-content .close {
   position: absolute;
   top: 10px; right: 20px;
   font-size: 24px;
@@ -667,7 +667,7 @@ body {
 .order-history-item:hover {
   background: #fcfcfc;
   transform: translateY(-2px);
-  border-color: #c0392b; /* Vermelho da marca */
-  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.08);
+  border-color: #970000; /* Vermelho da marca */
+  box-shadow: 0 4px 12px rgba(151, 0, 0, 0.08);
 }
 
