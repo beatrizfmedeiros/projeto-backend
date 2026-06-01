@@ -652,3 +652,22 @@ body {
   }
 }
 
+/* HISTÓRICO DE PEDIDOS INTERATIVO (LIGHT MODE) */
+.order-history-item {
+  background: #fdfdfd;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.order-history-item:hover {
+  background: #fcfcfc;
+  transform: translateY(-2px);
+  border-color: #c0392b; /* Vermelho da marca */
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.08);
+}
+
