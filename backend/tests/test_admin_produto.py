@@ -115,3 +115,25 @@ def test_non_admin_cannot_delete_product(client):
         headers=user_hdr,
     )
     assert resp.status_code == 403
+
+def test_admin_can_list_products(client):
+    # Ensure at least one product is created
+    test_admin_can_create_product(client)
+    admin_hdr = _make_auth_header(1, "Admin", "admin@example.com", role="admin")
+    resp = client.get(
+        "/api/admin/produtos",
+        headers=admin_hdr,
+    )
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["ok"] is True
+    assert "produtos" in data
+    assert len(data["produtos"]) > 0
+
+def test_non_admin_cannot_list_products(client):
+    user_hdr = _make_auth_header(2, "User", "user@example.com")
+    resp = client.get(
+        "/api/admin/produtos",
+        headers=user_hdr,
+    )
+    assert resp.status_code == 403

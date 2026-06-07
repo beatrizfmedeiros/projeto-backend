@@ -84,10 +84,13 @@ class UsuarioController:
             try:
                 from backend.infra.security.jwt_auth import decode_token
                 payload = decode_token(token)
+                usuario = self.usuario_service.get_by_name(payload["nome"])
+                role = usuario.role if usuario else "user"
                 return jsonify({
                     "logado": True,
                     "nome": payload["nome"],
                     "email": payload["email"],
+                    "role": role,
                     "metodo": "JWT"
                 })
             except Exception:
@@ -96,9 +99,12 @@ class UsuarioController:
         # 2. Fallback para Sessão clássica por cookies
         nome = session.get("usuario_nome")
         if nome:
+            usuario = self.usuario_service.get_by_name(nome)
+            role = usuario.role if usuario else "user"
             return jsonify({
                 "logado": True,
                 "nome": nome,
+                "role": role,
                 "metodo": "Session"
             })
 

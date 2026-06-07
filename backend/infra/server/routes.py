@@ -38,6 +38,27 @@ def api_admin_produto_delete(produto_id: int):
     return admin_produto_controller.remover(produto_id)
 
 
+@bp.route("/api/admin/produtos", methods=["GET"])
+@auth_required
+@admin_required
+def api_admin_produtos_list():
+    produtos = produto_repo.get_all()
+    return jsonify({
+        "ok": True,
+        "produtos": [
+            {
+                "id": p.id,
+                "nome": p.nome,
+                "preco": float(p.preco),
+                "foto": p.foto,
+                "descricao": p.descricao,
+                "categoria": p.categoria,
+                "tags": p.tags,
+                "ativo": bool(p.ativo)
+            } for p in produtos
+        ]
+    })
+
 # Blueprint already defined earlier
 
 # Setup de injeções (Dependency Injection)
@@ -88,6 +109,10 @@ def carrinho_page():
 @bp.route("/meus-pedidos")
 def meus_pedidos_page():
     return render_template("meus_pedidos.html")
+
+@bp.route("/admin")
+def admin_page():
+    return render_template("admin.html")
 
 # ─────────────────────────────────────────────
 # APIs – endpoints de dados 100% RESTful

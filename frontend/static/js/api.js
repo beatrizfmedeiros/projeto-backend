@@ -125,6 +125,7 @@ async function updateNavbar() {
             </button>
             <div class="user-dropdown-menu" id="user-dropdown-menu">
               <div class="user-dropdown-header">Olá, ${data.nome}!</div>
+              ${data.role === 'admin' ? '<a href="/admin" class="user-dropdown-item"><i class="fa-solid fa-gear"></i> Painel Admin</a>' : ''}
               <a href="/meus-pedidos" class="user-dropdown-item"><i class="fa-solid fa-clock-rotate-left"></i> Meus Pedidos</a>
               <div class="user-dropdown-divider"></div>
               <a href="#" class="user-dropdown-item text-danger" onclick="fazerLogout(event)"><i class="fa-solid fa-right-from-bracket"></i> Sair</a>
@@ -134,6 +135,7 @@ async function updateNavbar() {
       }
       if (mobileNav) {
         mobileNav.innerHTML = `
+          ${data.role === 'admin' ? '<li class="nav-item"><a href="/admin"><i class="fa-solid fa-gear me-2"></i> Painel Admin</a></li>' : ''}
           <li class="nav-item"><a href="/meus-pedidos"><i class="fa-solid fa-cart-shopping me-2"></i> Carrinho/Pedidos</a></li>
           <li class="nav-item"><a href="#" id="logout-btn-mobile" onclick="fazerLogout(event)"><i class="fa-solid fa-right-from-bracket me-2"></i> Sair (${data.nome})</a></li>
         `;

@@ -126,4 +126,23 @@ def init_db():
                 produtos_iniciais
             )
 
+        # Garante a existência do usuário administrador padrão
+        from backend.infra.security.cryptography import SymmetricCryptographer
+        cryptographer = SymmetricCryptographer()
+        admin_pass_hash = "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9" # hash de 'admin123'
+        admin_cpf_encrypted = cryptographer.encrypt("00000000000")
+        
+        cursor = conn.execute("SELECT COUNT(*) FROM Usuarios WHERE Email = 'admin@example.com'")
+        if cursor.fetchone()[0] == 0:
+            conn.execute(
+                """INSERT INTO Usuarios (Nome, Telefone, Email, CPF, Endereco, Referencia, Senha, role)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                ("Admin", "21 40028922", "admin@example.com", admin_cpf_encrypted, "Rua carlinhos 1050", "", admin_pass_hash, "admin")
+            )
+        else:
+            conn.execute(
+                "UPDATE Usuarios SET Senha = ?, role = ?, CPF = ? WHERE Email = 'admin@example.com'",
+                (admin_pass_hash, "admin", admin_cpf_encrypted)
+            )
+
         conn.commit()
