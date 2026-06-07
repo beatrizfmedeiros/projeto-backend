@@ -24,36 +24,33 @@
   <div class="card p-4 mb-4">
     <h3>Nossa História</h3>
     <p>
-      Tudo começou com um erro. Literalmente. Em uma noite chuvosa de sexta-feira,
-      dois amigos — um programador apaixonado por pizza e um pizzaiolo frustrado com
-      os sabores genéricos do mercado — decidiram pedir uma pizza online. Mas o site
-      travou. Apareceu aquele temido aviso: <strong>Erro 404 – Página não encontrada.</strong>
-      <br><br>
-      Foi aí que veio a ideia: "E se a gente criasse uma pizzaria que fosse impossível
-      de esquecer? Uma que ninguém jamais quisesse ver fora do ar?"
-      <br><br>
-      Nasceu ali a Pizzaria404 — um lugar onde os sabores são tão únicos quanto o nome.
-      Cada pizza é feita com ingredientes selecionados, receitas autorais e uma pitada
-      de rebeldia. Nosso forno nunca dá erro. E se der, é só mais uma desculpa pra
-      criar algo novo.
+      A ideia da pizzaria surgiu da dificuldade de encontrar pizzas específicas nas redondezas. 
+      O nome Piazzaria404 é um trocadilho com o Erro 404 (Não Encontrado). 
+      Buscamos criar algo de uso simples, levando em conta a possibilidade de usuários menos habituados a sistemas, 
+      mas que ainda assim funcionasse da forma mais completa possível.
     </p>
 
     <h3>Nosso Objetivo</h3>
     <p>
-      Desde o início, o sonho dos fundadores era claro: criar um espaço onde cada pizza
-      contasse uma história e cada cliente se sentisse parte dela. Provar que uma pizzaria
-      pode ser mais do que um lugar para comer — pode ser um ponto de encontro, uma
-      experiência, uma memória boa que começa com uma mordida.
+      Visamos uma abordagem alternativa para o site de uma pizzaria: 
+      após pesquisar sites de outras pizzarias já consolidadas, notamos que todos funcionam basicamente como plataformas de delivery,
+      e não necessariamente como aplicações completas.
+      Entendemos que a praticidade de realizar um pedido rapidamente é o que atrai os clientes, mas buscamos ir além,
+      oferecendo cadastro e login de usuários. Mesmo em caráter provisório,
+      o sistema conta com um carrinho de compras no qual é possível adicionar e personalizar cada item.
+      Também desenvolvemos um acompanhamento de pedido em tempo real, para que o usuário possa monitorar sua entrega do início ao fim,
+      como em um aplicativo.
     </p>
   </div>
 
   <div class="text-center">
-    <h3>Nossos Fundadores</h3>
+    <h3>Membros Fundadores</h3>
     <div class="d-flex justify-content-center gap-4 mt-4 flex-wrap">
       {% for img, nome in [
-          ("fundador1.png",       "Gusteau"),
-          ("fundador2 (1).png",   "Sanji"),
-          ("fundador3.png",       "Chef Hatchet")
+          ("julio.png",       "Júlio César"),
+          ("ana.png",   "Ana Beatriz"),
+          ("anna.png",   "Anna Beatriz"),
+          ("luigi.png",       "Luigi")
       ] %}
       <div class="text-center">
         <img src="{{ url_for('static', filename='image/' + img) }}" class="founder-img" alt="{{ nome }}" />
