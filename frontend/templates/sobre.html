@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Sobre – Pizzaria 404{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { padding-top: 104px; }
+  .founder-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0,0,0,.2);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 pb-5">
+  <div class="text-center mb-4">
+    <h1>Sobre Nós - Pizzaria404</h1>
+    <p class="lead">Conheça nossa história e nossos fundadores</p>
+  </div>
+
+  <div class="card p-4 mb-4">
+    <h3>Nossa História</h3>
+    <p>
+      A ideia da pizzaria surgiu da dificuldade de encontrar pizzas específicas nas redondezas. 
+      O nome Piazzaria404 é um trocadilho com o Erro 404 (Não Encontrado). 
+      Buscamos criar algo de uso simples, levando em conta a possibilidade de usuários menos habituados a sistemas, 
+      mas que ainda assim funcionasse da forma mais completa possível.
+    </p>
+
+    <h3>Nosso Objetivo</h3>
+    <p>
+      Visamos uma abordagem alternativa para o site de uma pizzaria: 
+      após pesquisar sites de outras pizzarias já consolidadas, notamos que todos funcionam basicamente como plataformas de delivery,
+      e não necessariamente como aplicações completas.
+      Entendemos que a praticidade de realizar um pedido rapidamente é o que atrai os clientes, mas buscamos ir além,
+      oferecendo cadastro e login de usuários. Mesmo em caráter provisório,
+      o sistema conta com um carrinho de compras no qual é possível adicionar e personalizar cada item.
+      Também desenvolvemos um acompanhamento de pedido em tempo real, para que o usuário possa monitorar sua entrega do início ao fim,
+      como em um aplicativo.
+    </p>
+  </div>
+
+  <div class="text-center">
+    <h3>Membros Fundadores</h3>
+    <div class="d-flex justify-content-center gap-4 mt-4 flex-wrap">
+      {% for img, nome in [
+          ("julio.png",       "Júlio César"),
+          ("ana.png",   "Ana Beatriz"),
+          ("anna.png",   "Anna Beatriz"),
+          ("luigi.png",       "Luigi")
+      ] %}
+      <div class="text-center">
+        <img src="{{ url_for('static', filename='image/' + img) }}" class="founder-img" alt="{{ nome }}" />
+        <p class="mt-2 fw-semibold">{{ nome }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}

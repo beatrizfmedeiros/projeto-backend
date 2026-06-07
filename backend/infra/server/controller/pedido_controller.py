@@ -1,0 +1,121 @@
+from flask import request, jsonify, g
+from backend.domain.dto.pedido_dto import AdicionarItemDTO
+from backend.domain.service.pedido_service import PedidoService
+
+class PedidoController:
+    def __init__(self, pedido_service: PedidoService):
+        self.pedido_service = pedido_service
+
+    def obter_carrinho(self):
+        """Retorna todos os itens do carrinho ativo do usuário em formato JSON estruturado"""
+        nome = g.current_user.nome
+        try:
+            itens = self.pedido_service.get_cart_items(nome)
+            total = 0.0
+            itens_out = []
+            for it in itens:
+                total += it.subtotal
+                itens_out.append({
+                    "id": it.id,
+                    "nome": it.item_nome,
+                    "foto": it.item_foto,
+                    "valor_unitario": float(it.item_valor),
+                    "quantidade": int(it.quantidade),
+                    "observacao": it.observacao,
+                    "subtotal": float(it.subtotal)
+                })
+            return jsonify({
+                "ok": True,
+                "itens": itens_out,
+                "total": float(total)
+            })
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Error fetching cart: {str(e)}"}), 500
+
+    def adicionar_item(self):
+        """Adiciona um item ao carrinho via form-data ou JSON payload"""
+        nome = g.current_user.nome
+        
+        # Suporta tanto form-data tradicional quanto payloads JSON
+        dados = request.get_json(silent=True) or {}
+        item = request.form.get("item")
+        if not item:
+            item = dados.get("item")
+        item = (item or "").strip()
+
+        personalizacao = request.form.get("personalizacao")
+        if not personalizacao:
+            personalizacao = dados.get("personalizacao")
+        personalizacao = (personalizacao or "").strip()
+
+        quantidade = request.form.get("quantidade")
+        if not quantidade:
+            quantidade = dados.get("quantidade")
+        quantidade = str(quantidade or "1").strip()
+
+        dto = AdicionarItemDTO(
+            item_nome=item,
+            quantidade=quantidade,
+            observacao=personalizacao
+        )
+        try:
+            dto.validate()  # Valida contrato sintático (Single Source of Truth)
+            self.pedido_service.add_item(nome, dto)
+            return jsonify({
+                "ok": True,
+                "mensagem": f"Item '{dto.item_nome}' added to cart successfully!"
+            }), 201
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Internal server error: {str(e)}"}), 500
+
+    def remover_item(self, pedido_item_id):
+        """Remove um item específico do carrinho"""
+        nome = g.current_user.nome
+        try:
+            self.pedido_service.remove_cart_item(nome, pedido_item_id)
+            return jsonify({
+                "ok": True,
+                "mensagem": "Item removed from cart successfully!"
+            })
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Error removing item: {str(e)}"}), 500
+
+    def finalizar(self):
+        """Finaliza o carrinho ativo (Checkout) usando dados de checkout congelados."""
+        nome = g.current_user.nome
+        try:
+            data = request.get_json(silent=True) or {}
+            # Expected fields: endereco_entrega, forma_pagamento, valor_frete, total_pago
+            from backend.domain.dto.finalizar_pedido_dto import FinalizarPedidoDTO
+            dto = FinalizarPedidoDTO(
+                endereco_entrega=data.get('endereco_entrega'),
+                forma_pagamento=data.get('forma_pagamento'),
+                valor_frete=data.get('valor_frete'),
+                total_pago=data.get('total_pago')
+            )
+            # Service now expects DTO
+            self.pedido_service.checkout_cart(nome, dto)
+            return jsonify({
+                "ok": True,
+                "mensagem": "Order finalized successfully!"
+            })
+        except ValueError as e:
+            return jsonify({"ok": False, "erro": str(e)}), 400
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Error finalizing order: {str(e)}"}), 500
+
+    def obter_historico(self):
+        """Retorna o histórico de pedidos finalizados do usuário em JSON"""
+        nome = g.current_user.nome
+        try:
+            historico = self.pedido_service.get_history(nome)
+            return jsonify({
+                "ok": True,
+                "historico": historico
+            })
+        except Exception as e:
+            return jsonify({"ok": False, "erro": f"Error fetching history: {str(e)}"}), 500

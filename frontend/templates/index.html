@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Pizzaria 404{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section id="inicio" style="position:relative;">
+  <div id="hero">
+    <div class="overlay-container">
+      <img class="background-principal"
+           src="{{ url_for('static', filename='image/pizza fundo.jpeg') }}"
+           alt="Pizza" />
+    </div>
+    <div class="hero-overlay">
+      <h1>Bem-vindo à<br>Pizzaria 404</h1>
+      <p class="tagline">Sabor não encontrado? Só se for em outro lugar.</p>
+      <p>A melhor pizza da cidade</p>
+      <button onclick="scrollToSection('cardapio')">Ver Cardápio</button>
+    </div>
+  </div>
+</section>
+
+<!-- Cardápio -->
+<section id="cardapio" class="section">
+  <h2>Cardápio</h2>
+  <div class="pizza-gallery">
+    <div class="pizza-item">
+      <img src="{{ url_for('static', filename='image/mussarela.jpeg') }}" alt="Pizza Mussarela" />
+      <h3>Pizza Mussarela</h3>
+      <p>Deliciosa pizza com molho de tomate fresco e mussarela.</p>
+    </div>
+    <div class="pizza-item">
+      <img src="{{ url_for('static', filename='image/calabresa.jpeg') }}" alt="Pizza Calabresa" />
+      <h3>Pizza Calabresa</h3>
+      <p>Pizza com calabresa, cebola e orégano.</p>
+    </div>
+    <div class="pizza-item">
+      <img src="{{ url_for('static', filename='image/4queijos.jpg') }}" alt="Pizza Quatro Queijos" />
+      <h3>Pizza Quatro Queijos</h3>
+      <p>Uma combinação irresistível de quatro queijos.</p>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:2rem;">
+    <a href="/cardapio" class="ver-mais-btn">Ver cardápio completo →</a>
+  </div>
+</section>
+
+<!-- Sobre -->
+<section id="sobre" class="section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2>Sobre Nós - Pizzaria404</h2>
+      <p class="lead">Conheça nossa história e nossos fundadores</p>
+    </div>
+    <div class="card p-4 mb-4" style="text-align:left;">
+      <h3>Nossa História</h3>
+      <p>
+        Tudo começou com um erro. Literalmente. Em uma noite chuvosa de sexta-feira,
+        dois amigos — um programador apaixonado por pizza e um pizzaiolo frustrado com
+        os sabores genéricos do mercado — decidiram pedir uma pizza online. Mas o site
+        travou. Apareceu aquele temido aviso: Erro 404 – Página não encontrada.
+        <br><br>
+        Foi aí que veio a ideia: e se criassem uma pizzaria impossível de esquecer?
+        Nasceu ali a Pizzaria 404 — ingredientes selecionados, receitas autorais e uma
+        pitada de rebeldia. Nosso forno nunca dá erro.
+      </p>
+      <h3>Nosso Objetivo</h3>
+      <p>
+        Criar um espaço onde cada pizza conte uma história e cada cliente se sinta
+        parte dela. Uma experiência, uma memória boa que começa com uma mordida.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Depoimentos -->
+<section id="depoimentos" class="section">
+  <h2>Avaliações</h2>
+  <div class="slider-container">
+    <div class="slider">
+      <div class="slide active">
+        <blockquote>"A melhor pizza que já provei! Atendimento impecável."</blockquote>
+        <p>- Ana Beatriz</p>
+      </div>
+      <div class="slide">
+        <blockquote>"Cada fatia é um pedaço do paraíso. Recomendo!"</blockquote>
+        <p>- Júlio César</p>
+      </div>
+      <div class="slide">
+        <blockquote>"Ambiente agradável e pizzas divinas. Vale a visita!"</blockquote>
+        <p>- Anna Tavares</p>
+      </div>
+    </div>
+    <button class="slider-btn prev" onclick="prevSlide()">&#10094;</button>
+    <button class="slider-btn next" onclick="nextSlide()">&#10095;</button>
+  </div>
+</section>
+
+<!-- Contato -->
+<section id="contato" class="section">
+  <h2>Contato</h2>
+  <div class="contato">
+    <form id="contactForm">
+      <input type="text"  placeholder="Nome"     required />
+      <input type="email" placeholder="Email"    required />
+      <textarea           placeholder="Mensagem" required rows="4"></textarea>
+      <button type="submit">Enviar</button>
+    </form>
+    <div class="social-contact">
+      <div class="icons">
+        <a href="https://wa.me/5599999999999" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="mailto:contato@pizzaria404.com" title="Email"><i class="fas fa-envelope"></i></a>
+        <a href="https://instagram.com/pizzaria404" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}

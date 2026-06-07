@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+{% block title %}Meus Pedidos – Pizzaria 404{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { padding-top: 104px; }
+  .pedido-item-img { width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid var(--glass-border); }
+  .pedido-header { background: rgba(255,255,255,0.02); color: var(--accent-gold); border-bottom: 1px solid var(--glass-border); }
+  .checkout-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+  }
+  
+  /* ESTILOS PREMIUM PARA O MODAL DE DETALHES DO PEDIDO */
+  #pedidoDetalhesModal {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  }
+  #pedidoDetalhesModal .modal-content {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    max-width: 100% !important;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  }
+  
+  /* Sobrescreve fontes mono e line-height do body para elementos do modal */
+  #pedidoDetalhesModal h5,
+  #pedidoDetalhesModal h6,
+  #pedidoDetalhesModal p,
+  #pedidoDetalhesModal span,
+  #pedidoDetalhesModal th,
+  #pedidoDetalhesModal td,
+  #pedidoDetalhesModal button {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    line-height: 1.45 !important;
+  }
+  
+  /* Animações e Efeitos Micro */
+  @keyframes active-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(151, 0, 0, 0.4); }
+    70% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(151, 0, 0, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(151, 0, 0, 0); }
+  }
+  .animate-pulse {
+    animation: active-pulse 2s infinite;
+  }
+  
+  /* RASTREAMENTO VISUAL NO MODAL */
+  .modal-tracking-wrapper {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03) !important;
+  }
+  
+  /* RASTREAMENTO VISUAL NA TELA PRINCIPAL (WIDGET DE ACOMPANHAMENTO ATIVO) */
+  .tracking-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eef0f3;
+  }
+  
+  .tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f3f5;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    color: #333333 !important;
+  }
+  
+  .tracking-header h6 {
+    color: #333333 !important;
+    font-size: 1.1rem;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  
+  .order-status-badge {
+    background: #fdf2e9;
+    color: #e67e22;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid #fae5d3;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  
+  .tracking-stepper {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    padding-bottom: 8px;
+    margin-top: 24px;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  
+  /* Linha base do stepper */
+  .tracking-stepper::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #eef0f2;
+    z-index: 1;
+    border-radius: 2px;
+  }
+  
+  .tracking-progress-fill {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    height: 4px;
+    background: #27ae60;
+    z-index: 2;
+    transition: width 0.4s ease;
+    border-radius: 2px;
+  }
+  
+  .step-node {
+    text-align: center;
+    position: relative;
+    z-index: 3;
+    width: 20%;
+  }
+  
+  .step-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #cbd5e1;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+  
+  .step-label {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.3s ease;
+  }
+  
+  /* Estados do Stepper Ativo */
+  .step-node.completed .step-circle {
+    background: #27ae60;
+    border-color: #27ae60;
+    color: #ffffff;
+  }
+  
+  .step-node.completed .step-label {
+    color: #27ae60;
+  }
+  
+  .step-node.active .step-circle {
+    background: #970000;
+    border-color: #970000;
+    color: #ffffff;
+    animation: active-pulse 2s infinite;
+  }
+  
+  .step-node.active .step-label {
+    color: #970000;
+    font-weight: 700;
+  }
+  
+  /* Responsividade para Steppers */
+  @media (max-width: 576px) {
+    .step-circle { width: 34px; height: 34px; font-size: 13px; }
+    .step-label { font-size: 10px; margin-top: 6px; }
+    .tracking-stepper::before, .tracking-progress-fill { top: 16px; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container pb-5">
+  <div class="text-center mt-4 mb-3">
+    <h2>Minha Conta & Pedidos</h2>
+  </div>
+
+  <div id="auth-warning-msg" class="text-center py-5 d-none">
+    <div class="card p-4 d-inline-block" style="max-width: 450px;">
+      <h5 class="text-warning mb-3"><i class="fa-solid fa-circle-exclamation"></i> Autenticação Necessária</h5>
+      <p class="text-muted">Por favor, realize login ou crie uma conta para visualizar seu carrinho e acompanhar seus pedidos.</p>
+      <div class="d-flex gap-2 justify-content-center mt-4">
+        <a href="/login" class="btn btn-warning fw-bold px-4">Login</a>
+        <a href="/cadastro" class="btn btn-outline-light px-4">Cadastro</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="account-dashboard" class="d-none">
+    
+    <!-- 1. PAINEL DE RASTREAMENTO DO PEDIDO ATIVO (SE HOUVER) -->
+    <div id="active-tracking-panel" class="d-none">
+      <!-- Injetado dinamicamente -->
+    </div>
+
+    <!-- 2. CARRINHO DE COMPRAS / ITENS SALVOS -->
+    <div id="active-cart-panel" class="card shadow-sm border-0 mb-4 d-none">
+      <div class="card-header pedido-header text-center">
+        <h5 class="mb-0 fw-bold">🛒 Itens no seu Carrinho</h5>
+      </div>
+      <div class="card-body">
+        <div id="cart-items-container" class="list-group list-group-flush">
+          <!-- Itens do carrinho injetados por JS -->
+        </div>
+
+        <div class="mt-4">
+          <div class="row g-3 align-items-center">
+            <div class="col-12 col-md-6 text-center text-md-start">
+              <div class="fs-4 fw-bold text-white">Total: <span id="cart-total-value" class="text-warning">R$ 0,00</span></div>
+            </div>
+            <div class="col-12 col-md-6 d-flex gap-2 justify-content-center justify-content-md-end">
+              <a href="/cardapio" class="btn btn-outline-warning">Continuar Comprando</a>
+              <button id="btn-show-checkout" class="btn btn-warning fw-bold px-4">Finalizar Pedido</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. TELA DE CHECKOUT (ENDEREÇO E PAGAMENTO) -->
+    <div id="checkout-panel" class="checkout-section d-none">
+      <h4 class="text-warning mb-4 fw-bold"><i class="fa-solid fa-credit-card"></i> Dados de Checkout</h4>
+      <form id="form-checkout">
+        <div class="row g-3">
+          <div class="col-12 col-md-8">
+            <label for="checkout-endereco" class="form-label">Endereço de Entrega</label>
+            <input type="text" class="form-control" id="checkout-endereco" required placeholder="Rua das Pizzas, 123 - Centro" />
+          </div>
+          <div class="col-12 col-md-4">
+            <label for="checkout-pagamento" class="form-label">Forma de Pagamento</label>
+            <select class="form-select" id="checkout-pagamento" required>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Cartão de Débito">Cartão de Débito</option>
+              <option value="PIX">PIX</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Valor do Frete</label>
+            <input type="text" class="form-control" id="checkout-frete" readonly value="R$ 5,00" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Total a Pagar</label>
+            <input type="text" class="form-control text-warning fw-bold" id="checkout-total" readonly value="R$ 0,00" />
+          </div>
+        </div>
+        <div class="d-flex gap-2 justify-content-end mt-4">
+          <button type="button" id="btn-cancel-checkout" class="btn btn-outline-light">Voltar ao Carrinho</button>
+          <button type="submit" class="btn btn-warning fw-bold px-4">Confirmar e Finalizar Pedido</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 4. HISTÓRICO DE PEDIDOS ANTERIORES -->
+    <div class="card shadow-sm border-0 mt-5">
+      <div class="card-header pedido-header text-center">
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Pedidos</h5>
+      </div>
+      <div class="card-body">
+        <div id="history-items-container">
+          <!-- Injetado dinamicamente -->
+          <div class="text-center text-muted py-4">Nenhum pedido finalizado anteriormente.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DE DETALHES DO PEDIDO -->
+<div class="modal fade" id="pedidoDetalhesModal" tabindex="-1" aria-labelledby="pedidoDetalhesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" style="background: #ffffff; border-radius: 20px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.15); overflow: hidden;">
+      <div class="modal-header px-4 py-3" style="background-color: #970000; color: #fff; border-bottom: none;">
+        <h5 class="modal-title fw-bold" id="pedidoDetalhesModalLabel" style="font-size: 1.3rem;">
+          <i class="fa-solid fa-receipt me-2"></i> Detalhes do Pedido #<span id="detail-order-id"></span>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body p-4" style="background-color: #fafafa;">
+        
+        <!-- Linha de Status Visual (Stepper) no Modal -->
+        <div class="modal-tracking-wrapper mb-4 p-3 rounded-4" style="background-color: #fff; border: 1px solid #e9ecef; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small fw-bold"><i class="fa-solid fa-circle-dot text-danger animate-pulse me-1"></i> ACOMPANHAMENTO DO STATUS</span>
+            <span id="modal-status-badge" class="badge rounded-pill px-3 py-1 font-monospace" style="font-size: 11px; text-transform: uppercase;"></span>
+          </div>
+          <div class="modal-stepper position-relative d-flex justify-content-between align-items-center px-2 py-3" style="position: relative; min-height: 80px;">
+            <!-- Linha de progresso no fundo -->
+            <div class="modal-stepper-progress-bg" style="position: absolute; top: 38px; left: 0; right: 0; height: 4px; background-color: #cbd5e1; transform: translateY(-50%); z-index: 1;"></div>
+            <div class="modal-stepper-progress-fill" id="modal-progress-fill" style="position: absolute; top: 38px; left: 0; height: 4px; background-color: #27ae60; transform: translateY(-50%); z-index: 2; transition: width 0.4s ease;"></div>
+            
+            <!-- Passos -->
+            <div class="modal-step text-center position-relative" style="z-index: 3; width: 25%;" data-step="RECEBIDO">
+              <div class="modal-step-icon d-flex align-items-center justify-content-center mx-auto rounded-circle" style="width: 42px; height: 42px; background-color: #fff; border: 3px solid #cbd5e1; color: #64748b; transition: all 0.3s ease;">
+                <i class="fa-solid fa-receipt" style="font-size: 15px;"></i>
+              </div>
+              <span class="modal-step-label d-block mt-2 fw-semibold text-muted" style="font-size: 11px;">Recebido</span>
+            </div>
+            <div class="modal-step text-center position-relative" style="z-index: 3; width: 25%;" data-step="PREPARANDO">
+              <div class="modal-step-icon d-flex align-items-center justify-content-center mx-auto rounded-circle" style="width: 42px; height: 42px; background-color: #fff; border: 3px solid #cbd5e1; color: #64748b; transition: all 0.3s ease;">
+                <i class="fa-solid fa-fire-burner" style="font-size: 15px;"></i>
+              </div>
+              <span class="modal-step-label d-block mt-2 fw-semibold text-muted" style="font-size: 11px;">Preparando</span>
+            </div>
+            <div class="modal-step text-center position-relative" style="z-index: 3; width: 25%;" data-step="EM_ROTA_DE_ENTREGA">
+              <div class="modal-step-icon d-flex align-items-center justify-content-center mx-auto rounded-circle" style="width: 42px; height: 42px; background-color: #fff; border: 3px solid #cbd5e1; color: #64748b; transition: all 0.3s ease;">
+                <i class="fa-solid fa-motorcycle" style="font-size: 15px;"></i>
+              </div>
+              <span class="modal-step-label d-block mt-2 fw-semibold text-muted" style="font-size: 11px;">Em Rota</span>
+            </div>
+            <div class="modal-step text-center position-relative" style="z-index: 3; width: 25%;" data-step="ENTREGUE">
+              <div class="modal-step-icon d-flex align-items-center justify-content-center mx-auto rounded-circle" style="width: 42px; height: 42px; background-color: #fff; border: 3px solid #cbd5e1; color: #64748b; transition: all 0.3s ease;">
+                <i class="fa-solid fa-house-chimney-user" style="font-size: 15px;"></i>
+              </div>
+              <span class="modal-step-label d-block mt-2 fw-semibold text-muted" style="font-size: 11px;">Entregue</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Grid de Informações -->
+        <div class="row g-4 mb-4">
+          <!-- Coluna Entrega -->
+          <div class="col-12 col-md-6 text-start">
+            <div class="card h-100 p-4 border-0" style="background-color: #fdf6ec; border: 1px solid #f3e5d0 !important; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+              <h6 class="text-danger fw-bold mb-3" style="font-size: 1.05rem;">
+                <i class="fa-solid fa-truck-ramp-box me-2"></i> Informações de Entrega
+              </h6>
+              
+              <div class="mb-3">
+                <span class="text-muted d-block small fw-semibold uppercase" style="font-size: 11px; letter-spacing: 0.5px;">ENDEREÇO</span>
+                <p id="detail-endereco" class="fw-medium text-dark mb-0 mt-1" style="font-size: 14px; line-height: 1.4;"></p>
+              </div>
+              
+              <div>
+                <span class="text-muted d-block small fw-semibold uppercase" style="font-size: 11px; letter-spacing: 0.5px;">FORMA DE PAGAMENTO</span>
+                <p id="detail-pagamento" class="fw-medium text-dark mb-0 mt-1" style="font-size: 14px;"></p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Coluna Resumo Financeiro -->
+          <div class="col-12 col-md-6 text-start">
+            <div class="card h-100 p-4 border-0" style="background-color: #f5f6f8; border: 1px solid #e5e7eb !important; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+              <h6 class="text-dark fw-bold mb-3" style="font-size: 1.05rem;">
+                <i class="fa-solid fa-file-invoice-dollar me-2"></i> Resumo do Pagamento
+              </h6>
+              
+              <div class="d-flex justify-content-between mb-2" style="font-size: 14px;">
+                <span class="text-muted">Valor do Frete</span>
+                <span id="detail-frete" class="text-dark fw-semibold">R$ 5,00</span>
+              </div>
+              
+              <div class="d-flex justify-content-between border-bottom border-light-subtle pb-2 mb-2" style="font-size: 14px;">
+                <span class="text-muted">Status do Rastreamento</span>
+                <span id="detail-status" class="badge bg-warning text-dark fw-bold px-3 py-1" style="border-radius: 20px; font-size: 11px; text-transform: uppercase;"></span>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small">Realizado em</span>
+                <span id="detail-data" class="text-muted font-monospace" style="font-size: 13px;"></span>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top border-secondary-subtle">
+                <span class="fw-bold text-dark" style="font-size: 1.1rem;">Total Pago</span>
+                <span id="detail-total" class="text-danger fw-bold" style="font-size: 1.4rem;">R$ 0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Seção de Itens -->
+        <h6 class="text-danger fw-bold mb-3 text-start px-1" style="font-size: 1.1rem;">
+          <i class="fa-solid fa-pizza-slice me-2"></i> Itens do Pedido
+        </h6>
+        
+        <div class="card border-0 p-2" style="border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle text-start mb-0" style="font-size: 14px;">
+              <thead>
+                <tr class="text-muted border-bottom" style="font-size: 12px; font-weight: 700; letter-spacing: 0.5px;">
+                  <th class="ps-3 py-3" style="width: 45%;">PRODUTO</th>
+                  <th class="py-3">QUANTIDADE</th>
+                  <th class="py-3">OBSERVAÇÃO</th>
+                  <th class="py-3 text-end">PREÇO UNITÁRIO</th>
+                  <th class="pe-3 py-3 text-end">SUBTOTAL</th>
+                </tr>
+              </thead>
+              <tbody id="detail-items-body" class="table-group-divider">
+                <!-- Preenchido dinamicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+      </div>
+      
+      <div class="modal-footer px-4 py-3" style="background-color: #fafafa; border-top: 1px solid #eee;">
+        <button type="button" class="btn btn-outline-danger px-5 fw-semibold" style="border-radius: 10px;" data-bs-dismiss="modal">Fechar Recibo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center py-3 mt-5">
+  <p class="mb-0">&copy; 2025 Pizzaria 404. Todos os direitos reservados.</p>
+</footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
+{% endblock %}
