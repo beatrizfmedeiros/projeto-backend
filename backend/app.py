@@ -1,4 +1,11 @@
 import os
+import sys
+
+# Garante que a raiz do projeto esteja no sys.path para importações relativas funcionarem em qualquer SO
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from backend.infra.server.app_factory import bootstrap_app
 
 # Inicializa o Flask através da fábrica de inicialização

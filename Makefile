@@ -1,24 +1,27 @@
+ifeq ($(OS),Windows_NT)
+    VENV = venv
+    PYTHON = $(VENV)\Scripts\python.exe
+    PIP = $(VENV)\Scripts\pip.exe
+    ACTIVATE = $(VENV)\Scripts\activate
+else
+    VENV = venv
+    PYTHON = $(VENV)/bin/python
+    PIP = $(VENV)/bin/pip
+    ACTIVATE = $(VENV)/bin/activate
+endif
+
 .PHONY: install run dev help
 
-VENV = venv
-PYTHON = $(VENV)/bin/python
-PIP = $(VENV)/bin/pip
-
 help:
-	@echo "Comandos disponíveis:"
-	@echo "  make install - Cria o ambiente virtual e instala as dependências"
-	@echo "  make run     - Inicia a Pizzaria 404 com as variáveis do .env"
+	@echo "Comandos disponiveis:"
+	@echo "  make install - Cria o ambiente virtual e instala as dependencias"
+	@echo "  make run     - Inicia a Pizzaria 404"
 
-$(VENV)/bin/activate:
+$(ACTIVATE):
 	python -m venv $(VENV)
 
-install: $(VENV)/bin/activate
+install: $(ACTIVATE)
 	$(PIP) install -r backend/requirements.txt
 
 run dev: install
-	@if [ -f .env ]; then \
-		echo "Carregando variáveis do arquivo .env..."; \
-		export $$(cat .env | grep -v '^#' | xargs) && PYTHONPATH=. $(PYTHON) backend/app.py; \
-	else \
-		PYTHONPATH=. $(PYTHON) backend/app.py; \
-	fi
+	$(PYTHON) backend/app.py

@@ -1,4 +1,26 @@
 import os
+
+def _load_env():
+    # Caminho absoluto para a raiz do projeto (onde o .env está)
+    factory_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.dirname(os.path.dirname(factory_dir))
+    project_dir = os.path.dirname(backend_dir)
+    env_path = os.path.join(project_dir, ".env")
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip().strip("'\"")
+                    if k and not os.environ.get(k):
+                        os.environ[k] = v
+
+_load_env()
+
 from flask import Flask
 from flask_cors import CORS
 from backend.infra.db import init_db
